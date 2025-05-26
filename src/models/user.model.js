@@ -10,6 +10,10 @@ const UserSchema = new mongoose.Schema({
     local_government: {type: String},
     neighborhood: {type: String},
     profile_image: {type: String, default: 'https://res.cloudinary.com/dwx1tdonc/image/upload/w_1000,c_fill,ar_1:1,g_auto,r_max,bo_5px_solid_red,b_rgb:262c35/v1748208985/default_icon_zynrhv.jpg'},
+    issues: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Issue' }],
+    comments: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Comment' }],
+    votes: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Vote' }],
+
 }, 
 
 { timestamps: true }
