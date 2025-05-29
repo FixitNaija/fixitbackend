@@ -8,8 +8,11 @@ const issueSchema = new mongoose.Schema({
     location: {type: string, required: true},
     images: {type: string, required: true},
     status: {type: string, enum: ['Reported', 'Acknowledged','In Progress', 'Resolved'], default: 'Open'},
-    reportdate: Date.now , 
-    reportby: [{type: mongoose.Schema.Types.ObjectId, ref: 'firstName'}], 
+    reportdate: { type: Date, default: Date.now },
+    reportedBy: [{type: mongoose.Schema.Types.ObjectId, ref: 'User'}],
+    isAnonymous: {type: Boolean, default: false},
+    votes: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Vote' }],
+    comments: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Comment' }],
 },
 
     {timestamps: true} 
