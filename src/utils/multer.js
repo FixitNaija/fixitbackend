@@ -4,7 +4,7 @@ const path = require('path');
 
 
 module.exports = multer({
-   storage: multer.diskStorage({}),
+   storage: multer.memoryStorage({}),
    fileFilter: (req, file, cb) => {
     const allowedExtensions = ['.jpg', '.jpeg', '.png'];
      let ext = path.extname(file.originalname);

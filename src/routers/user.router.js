@@ -1,7 +1,6 @@
 const express = require('express');
-const { userSignup, verifyUser, forgotPassword, resetPassword } = require('../controllers/user.controller');
+const { userSignup, userLogin, verifyUser, forgotPassword, resetPassword } = require('../controllers/user.controller');
 const router = express.Router();
-const multer = require('../utils/multer');
 
 
 router.post('/signup', userSignup);

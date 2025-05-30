@@ -5,7 +5,7 @@ const cloudinary = require('../utils/cloudinary');
 exports.createIssue = async (req, res) => {
     const { title, description, category, state, location, images} = req.body;
     const {_id} = req.query;
-    const filePath = req.file.path;
+    const filePath = req.file.buffer;
 
     try {
         if (!title || !description || !category || !state || !location || !images) {
@@ -55,8 +55,7 @@ exports.getIssues = async (req, res) => {
     try {
         const issues = await Issue.find()
             .populate('reportedBy', 'firstName location reportdate status')
-            .populate('myIssues', 'title description category state location images reportdate status')
-            .populate('comments', 'content createdAt')
+            .populate('comments', 'userId content createdAt')
             .populate('votes', 'userId voteType createdAt')
 
             .sort({ reportdate: -1 });
@@ -66,4 +65,19 @@ exports.getIssues = async (req, res) => {
         res.status(500).json({ message: "Server Error" });
     }
 };
+
+
+exports.myIssues = async (req, res) => {
+    try {
+        const issues = await Issue.find({ reportedBy: req.user.id })
+                                  .populate('myIssues', 'title description category state location images reportdate status')
+                                  .sort({ reportdate: -1 });
+        res.status(200).json({ message: "Issues retrieved successfully", data: issues });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: "Server Error" });
+    }
+};
+
+
 
