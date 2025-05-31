@@ -14,7 +14,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 app.use('/api/v1/user', userRouter);
-app.use('/api/v1/issues', issueRouter);
+app.use('/api/v1/issue', issueRouter);
 
 app.listen (PORT, () => {
     connectDb();

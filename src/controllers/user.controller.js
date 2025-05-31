@@ -156,4 +156,22 @@ exports.resetPassword = async (req, res) => {
     }
 }; 
 
+exports.testid = async (req, res) => {
+    const id = req.query.id;
+    try{
+        if(!id){
+            return res.status(400).json({message: "No ID"})
+        }
 
+        const existingUser = await User.findById(id);
+        if(!existingUser){
+            return res.status(403).json({message: "User not found"})
+        }
+
+        return res.status(200).json({message: "User found", data: existingUser.firstName, email: existingUser.email})
+
+    }catch(error){
+        console.log(error)
+        res.status(500).json({message: "Server Error"})
+    }
+};

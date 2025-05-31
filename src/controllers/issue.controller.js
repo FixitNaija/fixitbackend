@@ -1,11 +1,12 @@
 const Issue = require('../models/issue.model');
 const User = require('../models/user.model');
 const cloudinary = require('../utils/cloudinary');
+const path = require('path'); // Assuming you have a multer setup for file uploads
 
 exports.createIssue = async (req, res) => {
     const { title, description, category, state, location, images} = req.body;
-    const {_id} = req.query;
-    const filePath = req.file.buffer;
+    const id = req.query.id;
+    const filePath = req.file.path;
 
     try {
         if (!title || !description || !category || !state || !location || !images) {
@@ -13,7 +14,7 @@ exports.createIssue = async (req, res) => {
         }
 
         //find the user and attch the issue to the reporting user
-        const userId = await User.findById({_id});
+        const userId = await User.findById(id);
 
         const newIssue = new Issue({
             title,
@@ -68,8 +69,9 @@ exports.getIssues = async (req, res) => {
 
 
 exports.myIssues = async (req, res) => {
+    const userId = req.query.id; 
     try {
-        const issues = await Issue.find({ reportedBy: req.user.id })
+        const issues = await Issue.find({ reportedBy: userId })
                                   .populate('myIssues', 'title description category state location images reportdate status')
                                   .sort({ reportdate: -1 });
         res.status(200).json({ message: "Issues retrieved successfully", data: issues });
