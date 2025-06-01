@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const { createIssue, getIssues, myIssues } = require('../controllers/issue.controller');
 const multer = require('multer');
-const {upload} = require('../utils/multer'); 
+const upload = require('../utils/multer'); 
 
 
 

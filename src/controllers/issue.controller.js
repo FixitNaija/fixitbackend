@@ -1,49 +1,55 @@
 const Issue = require('../models/issue.model');
 const User = require('../models/user.model');
 const cloudinary = require('../utils/cloudinary');
-const path = require('path'); // Assuming you have a multer setup for file uploads
+const path = require('path');
 
 exports.createIssue = async (req, res) => {
-    const { title, description, category, state, location, images} = req.body;
+    const { title, description, category, state, location } = req.body;
     const id = req.query.id;
-    const filePath = req.file.path;
+    const images = req.files;
 
     try {
-        if (!title || !description || !category || !state || !location || !images) {
+        if (!title || !description || !category || !state || !location) {
             return res.status(400).json({ message: "Please fill in all fields" });
         }
 
-        //find the user and attch the issue to the reporting user
-        const userId = await User.findById(id);
+        // Find the user and attach the issue to the reporting user
+        const user = await User.findById(id);
+        if (!user) {
+            return res.status(404).json({ message: "User not found" });
+        }
+
+        // Upload multiple images to Cloudinary
+        let imageUrls = [];
+        if (req.files && req.files.length > 0) {
+            for (const file of req.files) {
+                const uploadResult = await cloudinary.uploader.upload(file.path, {
+                    folder: 'FixitIssues'
+                });
+                imageUrls.push(uploadResult.secure_url);
+            }
+        }
 
         const newIssue = new Issue({
             title,
             description,
             category,
             state,
-            location: userId.state,
-            images,
-            reportedBy: userId.firstName
-            
+            location,
+            images: imageUrls,
+            reportedBy: user._id,
+            reportedByName: user.firstName,
         });
 
-        //if user reports anonymously, do not attach user to the issue. Show 'Anonymous'
-        if (newIssue.isAnonymous == true) {
-            newIssue.reportedBy = 'Anonymous';
+        // If user reports anonymously, do not attach user to the issue. Show 'Anonymous'
+        if (newIssue.isAnonymous === true) {
+            newIssue.reportedByName = 'Anonymous';
         }
-
-        // Upload images to Cloudinary
-        const uploadResult = await cloudinary.uploader.upload(filePath,
-            { public_id: `image/${newIssue.category}_${newIssue._id}`,
-              folder: 'FixitIssues'
-        }); 
-
-        newIssue.images = uploadResult.secure_url;
 
         await newIssue.save();
 
         // Update the user's myIssues tab
-        await User.findByIdAndUpdate(userId, { $push: { myIssues: newIssue._id } });
+        await User.findByIdAndUpdate(user._id, { $push: { myIssues: newIssue._id } });
 
         res.status(201).json({ message: "Report created successfully", data: newIssue });
     } catch (error) {
