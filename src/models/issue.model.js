@@ -17,7 +17,7 @@ const issueSchema = new mongoose.Schema({
     votes: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Vote' }],
     comments: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Comment' }],
 },
-
+     
     {timestamps: true} 
 ); 
 
