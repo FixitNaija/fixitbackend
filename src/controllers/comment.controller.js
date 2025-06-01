@@ -91,3 +91,46 @@ exports.getCommentsForIssue = async (req, res) => {
   }
 };
 
+// Update a comment
+exports.updateComment = async (req, res) => {
+    try {
+        const comment = await Comment.findByIdAndUpdate(
+            req.params.id,
+            req.body,
+            { new: true }
+        );
+        if (!comment) {
+            return res.status(404).json({ message: 'Comment not found' });
+        }
+        res.json(comment);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
+// Get a single comment
+exports.getComment = async (req, res) => {
+    try {
+        const comment = await Comment.findById(req.params.id);
+        if (!comment) {
+            return res.status(404).json({ message: 'Comment not found' });
+        }
+        res.json(comment);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
+// Delete a comment
+exports.deleteComment = async (req, res) => {
+    try {
+        const comment = await Comment.findByIdAndDelete(req.params.id);
+        if (!comment) {
+            return res.status(404).json({ message: 'Comment not found' });
+        }
+        res.json({ message: 'Comment deleted successfully' });
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+

@@ -16,7 +16,7 @@ app.use(express.urlencoded({ extended: true }));
 
 app.use('/api/v1/user', userRouter);
 app.use('/api/v1/issue', issueRouter);
-app.use('/api/v1/comments', commentRoutes);
+app.use('/api/v1/comments', commentRouter);
 
 
 app.listen (PORT, () => { 
