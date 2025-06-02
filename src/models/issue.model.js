@@ -14,7 +14,7 @@ const issueSchema = new mongoose.Schema({
     reportedByName: {type: String},
     state: {type: String},
     isAnonymous: {type: Boolean, default: false},
-    votes: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Vote' }],
+    upvotes: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Vote' }],
     comments: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Comment' }],
 },
      

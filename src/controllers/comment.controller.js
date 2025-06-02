@@ -28,6 +28,11 @@ exports.createComment = async (req, res) => {
     issue.comments.push(comment._id);
     await issue.save();
 
+    await User.findByIdAndUpdate(authorId, {
+  $push: { comments: comment._id }
+});
+
+
     res.status(201).json({ message: 'Comment added successfully', comment });
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -47,6 +52,11 @@ exports.upvoteComment = async (req, res) => {
       await comment.save();
       return res.json({ success: true, upvotes: comment.upvotes.length });
     }
+
+    await User.findByIdAndUpdate(userId, {
+  $addToSet: { votes: comment._id }
+});
+
 
     res.status(400).json({ message: 'Already upvoted' });
   } catch (err) {
