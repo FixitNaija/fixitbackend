@@ -35,8 +35,7 @@ app.use('/api/v1/user', userRouter);
 app.use('/api/v1/issue', issueRouter);
 app.use('/api/v1/comments', commentRouter);
 
-
-app.listen (PORT, () => { 
+app.listen(PORT, () => {
     connectDb();
     console.log(`server is running on port ${PORT}`);
 })
