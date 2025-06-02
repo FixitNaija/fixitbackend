@@ -93,4 +93,19 @@ exports.myIssues = async (req, res) => {
 };
 
 
+exports.getAllIssues = async (req, res) => {
+    try {
+        const issues = await Issue.find()
+                                  .sort({ reportdate: -1 })
+                                  .populate('reportedBy', 'firstName')
+                                  .populate('comments', 'author content upvotes createdAt');
+
+        res.status(200).json({ message: "All issues retrieved successfully", data: issues });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: "Server Error" });
+    }
+}; 
+
+
 
