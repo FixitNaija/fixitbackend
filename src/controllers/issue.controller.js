@@ -66,8 +66,7 @@ exports.getSingleIssue = async (req, res) => {
     const id = req.query.id;
     try {
         const issue = await Issue.findById(id)
-            .populate('comments', 'userId content createdAt')
-            .populate('votes', 'userId upvotes createdAt');
+            .populate('comments', 'author content upvotes createdAt')
 
         if (!issue) {
             return res.status(404).json({ message: "Issue not found" });
