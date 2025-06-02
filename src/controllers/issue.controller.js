@@ -46,6 +46,10 @@ exports.createIssue = async (req, res) => {
             newIssue.reportedByName = 'Anonymous';
         }
 
+        if(newIssue.images.length === 0) {
+            return res.status(400).json({ message: "Please upload at least one image" });
+        }
+
         await newIssue.save();
 
         // Update the user's myIssues tab
@@ -58,15 +62,18 @@ exports.createIssue = async (req, res) => {
     }
 }; 
 
-exports.getIssues = async (req, res) => {
+exports.getSingleIssue = async (req, res) => {
+    const id = req.query.id;
     try {
-        const issues = await Issue.find()
-            .populate('reportedBy', 'firstName location reportdate status')
+        const issue = await Issue.findById(id)
             .populate('comments', 'userId content createdAt')
-            .populate('votes', 'userId voteType createdAt')
+            .populate('votes', 'userId upvotes createdAt');
 
-            .sort({ reportdate: -1 });
-        res.status(200).json({ message: "Issues retrieved successfully", data: issues });
+        if (!issue) {
+            return res.status(404).json({ message: "Issue not found" });
+        }
+
+        res.status(200).json({ message: "Issue retrieved successfully", data: issue });
     } catch (error) {
         console.error(error);
         res.status(500).json({ message: "Server Error" });
@@ -75,10 +82,9 @@ exports.getIssues = async (req, res) => {
 
 
 exports.myIssues = async (req, res) => {
-    const userId = req.query.id; 
+    const id = req.query.id; 
     try {
-        const issues = await Issue.find({ reportedBy: userId })
-                                  .populate('myIssues', 'title description category state location images reportdate status')
+        const issues = await Issue.find({ reportedBy: id })
                                   .sort({ reportdate: -1 });
         res.status(200).json({ message: "Issues retrieved successfully", data: issues });
     } catch (error) {
