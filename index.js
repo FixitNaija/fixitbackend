@@ -3,13 +3,13 @@ const connectDb = require('./src/config/db');
 const dotenv = require('dotenv');
 const passport = require('passport');
 const session = require('express-session');
-require('./src/middleware/passport.setup');
+require('./src/middleware/googleauth');
 
 
 const userRouter = require('./src/routers/user.router');
 const issueRouter = require('./src/routers/issue.router');
 const commentRouter = require('./src/routers/comment.router');
-const { isAuthenticated } = require('./src/middleware/googleauth');
+const { isAuthenticated } = require('./src/middleware/isAuthenticated');
 const googleAuthRouter = require('./src/routers/auth.router');
 
 

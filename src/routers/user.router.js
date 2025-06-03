@@ -1,7 +1,7 @@
 const express = require('express');
 const { userSignup, userLogin, verifyUser, forgotPassword, resetPassword, testid } = require('../controllers/user.controller');
 const router = express.Router();
-const {isAuthenticated} = require('../middleware/googleauth')
+const {isAuthenticated} = require('../middleware/isAuthenticated')
 
 
 
