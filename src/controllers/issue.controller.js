@@ -1,3 +1,4 @@
+const Upvote = require('../models/upvotes.model');
 const Issue = require('../models/issue.model');
 const User = require('../models/user.model');
 const cloudinary = require('../utils/cloudinary');
@@ -91,6 +92,58 @@ exports.myIssues = async (req, res) => {
         res.status(500).json({ message: "Server Error" });
     }
 };
+
+
+exports.getAllIssues = async (req, res) => {
+    try {
+        const issues = await Issue.find()
+                                  .sort({ reportdate: -1 })
+                                  .populate('reportedBy', 'firstName')
+                                  .populate('comments', 'author content upvotes createdAt');
+
+        res.status(200).json({ message: "All issues retrieved successfully", data: issues });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: "Server Error" });
+    }
+};
+
+exports.upvoteIssue = async (req, res) => {
+    const {issueID, userID}  = req.query;
+
+    try {
+        const validIssue = await Issue.findById(issueID);
+        if (!validIssue) {
+            return res.status(404).json({ message: "Issue not found" });
+        }
+             if (!userID) {
+            return res.status(400).json({ message: "Login to upvote this issue" });
+              }
+        let upvote = await Upvote.findOne({ issue: issueID });
+        if (!upvote) {
+            // If no upvote document exists for this issue, create a new one
+            upvote = new Upvote({ issue: issueID, whoUpvoted: [userID] });
+            await upvote.save();
+            await Issue.findByIdAndUpdate(issueID, { $push: { upvotes: upvote._id } });
+            return res.status(200).json({ message: 'Upvoted successfully' });
+        }
+
+        // Check if user already upvoted
+        if (upvote.whoUpvoted.includes(userID)) {
+            return res.status(400).json({ message: "You have already upvoted this issue" });
+        }
+
+        // Add user to whoUpvoted and save
+        upvote.whoUpvoted.push(userID);
+        await upvote.save();
+
+        res.status(200).json({ message: 'Upvoted successfully' });
+    } catch (error) {
+        res.status(500).json({ message: 'Server error' });
+    }
+};
+
+
 
 
 
