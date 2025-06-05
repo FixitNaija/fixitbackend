@@ -11,6 +11,7 @@ const issueRouter = require('./src/routers/issue.router');
 const commentRouter = require('./src/routers/comment.router');
 const { isAuthenticated } = require('./src/middleware/isAuthenticated');
 const googleAuthRouter = require('./src/routers/auth.router');
+const adminRouter = require('./src/routers/admin/admin.router');
 
 
 
@@ -34,9 +35,10 @@ app.use('/googleauth', googleAuthRouter);
 app.use('/api/v1/user', userRouter);
 app.use('/api/v1/issue', issueRouter);
 app.use('/api/v1/comments', commentRouter);
+app.use('/api/v1/admin', adminRouter);
 
 app.listen(PORT, () => {
     connectDb();
     console.log(`server is running on port ${PORT}`);
-})
+}); 
 

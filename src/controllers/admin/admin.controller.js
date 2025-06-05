@@ -2,38 +2,42 @@ const Admin = require('../../models/admin.model');
 const { hashPassword, comparePassword } = require('../../utils/hashing');
 const jwt = require('jsonwebtoken');
 
-exports.inviteadmin = async (req, res) => {
+
+
+exports.inviteAdmin = async (req, res) => {
     const { name, email } = req.body;
-    const {id} = req.query; 
+    const { _id } = req.query; 
     try {
         if (!name || !email) {
             return res.status(400).json({ message: 'Name and email are required' });
         }
 
-        const superadmin = await Admin.findById(id);
-        if (!superadmin || superadmin.role !== 'superadmin') {
+        //Retrieve the superadmin from the database but adds more speed and security by checking ENV 
+       const superadmin = await Admin.findById(_id);
+        if (!superadmin) {
+            return res.status(404).json({ message: 'Superadmin not found' });
+        }
+        if (superadmin.role !== "superadmin") {
             return res.status(403).json({ message: 'Only superadmins can invite new admins' });
         }
 
-        // OR keep the superadmin ID in the env file
-       // if (superadmin._id.toString() !== process.env.SUPERADMIN_ID) {
-         //   return res.status(403).json({ message: 'You are not authorized to invite admins' });
+        //Superadmin ID in the env file
+       // if (id !== process.env.SUPERADMIN_ID) {
+        //   return res.status(403).json({ message: 'You are not authorized to invite admins' });
         //}
-       
+
         const existingAdmin = await Admin.findOne({ email });
         if (existingAdmin) {
             return res.status(400).json({ message: 'Admin with this email already exists' });
     }
 
-        // Create signup token with email and name
-        const signupToken = jwt.sign(
-        { email, name }, process.env.SECRET_KEY,{ expiresIn: '1hr' }
-        );
+        // Create signup token to encrypt email and name
+        const signupToken = jwt.sign({ email, name }, process.env.SECRET_KEY,{ expiresIn: '1hr' });
     
         //generate signuplink 
-        const signupLink = `http://localhost:${process.env.PORT}/api/admin/signup/${signupToken}`;
+        const signupLink = `http://localhost:${process.env.PORT}/api/v1/admin/signup/${signupToken}`;
 
-        // Save invited admin to database
+    
         const invitedAdmin = new Admin({
             name,
             email,
@@ -45,7 +49,7 @@ exports.inviteadmin = async (req, res) => {
         await invitedAdmin.save();
 
         // Send response with signup link
-        return res.status(200).json({ message: 'Invite link generated successfully', signupLink, expiresIn: '30 minutes'}); 
+        return res.status(200).json({ message: 'Invite link generated successfully', signupLink, expiresIn: '1 hour' }); 
 
     } catch (error) {
         console.error('Invite admin error:', error);
@@ -53,8 +57,8 @@ exports.inviteadmin = async (req, res) => {
     }
 }; 
 
-exports.Adminsignup = async (req, res) => {
-    const { token } = req.query; ;
+exports.adminSignup = async (req, res) => {
+    const { token } = req.query;
     const { password } = req.body;
 
     try {
@@ -62,11 +66,10 @@ exports.Adminsignup = async (req, res) => {
             return res.status(400).json({ message: 'Token and password are required' });
         }
 
-        // Verify the token
         const decoded = jwt.verify(token, process.env.SECRET_KEY);
         const { email, name } = decoded;
 
-        // Check if the invite token is valid and not expired
+        // Validate invite token and if not expired
         const invitedAdmin = await Admin.findOne({
             email,
             inviteToken: token,
@@ -77,14 +80,13 @@ exports.Adminsignup = async (req, res) => {
             return res.status(400).json({ message: 'Invalid or expired invite link' });
         }
 
-        // Hash the password
+    
         const hashedPassword = await hashPassword(password);
 
-        // Update the admin's password and status
         invitedAdmin.password = hashedPassword;
         invitedAdmin.status = 'active';
-        invitedAdmin.inviteToken = undefined; // Clear invite token
-        invitedAdmin.inviteExpires = undefined; // Clear invite expiration
+        invitedAdmin.inviteToken = null; 
+        invitedAdmin.inviteExpires = null; 
 
         await invitedAdmin.save();
 

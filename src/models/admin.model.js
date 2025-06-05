@@ -3,7 +3,7 @@ const mongoose = require('mongoose');
 const adminSchema = new mongoose.Schema({
     name: { type: String, required: true },
     email: { type: String, required: true, unique: true },
-    password: { type: String, required: true },
+    password: { type: String },
     status: { type: String, enum: ['active', 'pending', 'deactivated'], default: 'pending' },
     inviteToken: { type: String, unique: true },
     inviteExpires: { type: Date },
