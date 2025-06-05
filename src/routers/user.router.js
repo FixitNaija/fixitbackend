@@ -1,7 +1,9 @@
 const express = require('express');
-const { userSignup, userLogin, verifyUser, forgotPassword, resetPassword, testid } = require('../controllers/user.controller');
+const { userSignup, userLogin, verifyUser, forgotPassword, resetPassword, testid, getProfile } = require('../controllers/user.controller');
 const router = express.Router();
-const {isAuthenticated} = require('../middleware/isAuthenticated')
+
+const isAuthenticated = require('../middleware/isAuthenticated')
+
 
 
 
@@ -11,16 +13,8 @@ router.get('/verify', verifyUser);
 router.post('/forgotpassword', forgotPassword);
 router.post('/resetpassword', resetPassword);
 
+router.get('/test', testid); 
+router.get('/profile', isAuthenticated, getProfile);
 
-router.get('/profile', isAuthenticated, (req, res) => {
-    res.json({
-        id: req.user._id,
-        firstName: req.user.firstName,
-        lastName: req.user.lastName,
-        email: req.user.email,
-        profilePicture: req.user.profilePicture,
-        googleId: req.user.googleId
-    });
-});
 
 module.exports = router;
