@@ -1,4 +1,5 @@
 const User = require('../models/user.model');
+const jwt = require('jsonwebtoken');
 const { hashPassword, comparePassword } = require('../utils/hashing');
 
 
@@ -75,31 +76,53 @@ exports.verifyUser = async (req, res) => {
 
 
 exports.userLogin = async (req, res) => {
-    const {email, password} = req.body; 
-    try{
-        if(!email ||!password){
-            return res.status(400).json({message: "Input your Login Credentials"})
-        }
+  const { email, password } = req.body;
 
-        const existingUser = await User.findOne({email})
-         if(!existingUser){
-            return res.status(403).json({message: "Please Create an Account"})
-            }
-
-        const isMatch = await comparePassword(password, existingUser.password);
-        if(!isMatch){
-            return res.status(403).json({message: "Invalid Credentials"})
-        }
-
-        if(existingUser.isVerified == false){
-            return res.status(403).json({message: "Account not Verified, Check email for OTP"})
-        }
-
-        return res.status(200).json({message: "Logged in Successfully", data: existingUser.firstName})
-    }catch(error){
-        console.log(error)
-        res.status(500).json({message: "Server Error"})
+  try {
+    if (!email || !password) {
+      return res.status(400).json({ message: "Input your Login Credentials" });
     }
+
+    const existingUser = await User.findOne({ email });
+
+    if (!existingUser) {
+      return res.status(403).json({ message: "Please Create an Account" });
+    }
+
+    const isMatch = await comparePassword(password, existingUser.password);
+    if (!isMatch) {
+      return res.status(403).json({ message: "Invalid Credentials" });
+    }
+
+    if (existingUser.isVerified === false) {
+      return res.status(403).json({ message: "Account not Verified, Check email for OTP" });
+    }
+
+    //  Generate JWT
+    const token = jwt.sign(
+      { 
+        user: {
+          _id: existingUser._id,
+          email: existingUser.email
+        }
+      },
+      process.env.JWT_SECRET,
+      { expiresIn: process.env.JWT_EXPIRES_IN || '7d' }
+    );
+
+    //  Send token and user details
+    res.status(200).json({
+      message: "Logged in Successfully",
+      token: `Bearer ${token}`,
+      user: {
+        _id: existingUser._id
+      }
+    });
+    
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Server Error" });
+  }
 };
 
 exports.forgotPassword = async (req, res) => {
@@ -174,4 +197,25 @@ exports.testid = async (req, res) => {
         console.log(error)
         res.status(500).json({message: "Server Error"})
     }
+};
+
+
+exports.getProfile = async (req, res) => {
+  try {
+    const user = await User.findById(req.user._id).select(
+      'firstName lastName email phone state localGovernment neighborhood profileImage'
+    );
+
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    res.status(200).json({
+      message: 'Profile fetched successfully',
+      data: user
+    });
+  } catch (error) {
+    console.error('Error fetching profile:', error);
+    res.status(500).json({ message: 'Server Error' });
+  }
 };
