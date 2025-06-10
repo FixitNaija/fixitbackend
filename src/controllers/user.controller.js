@@ -3,9 +3,9 @@ const { hashPassword, comparePassword } = require('../utils/hashing');
 
 
 exports.userSignup = async (req, res) => {
-    const {firstName, lastName, email, password} = req.body; 
+    const {firstName, lastName, phone, email, password} = req.body; 
     try{
-        if(!firstName || !lastName || !email ||!password){
+        if(!firstName || !lastName || !phone || !email ||!password){
             return res.status(400).json({message: "Input your Signup Credentials"})
         }
 
@@ -18,9 +18,8 @@ exports.userSignup = async (req, res) => {
         const hashedPassword = await hashPassword(password);
         const otp = Math.floor(100000 + Math.random() * 900000).toString();
 
-        const newUser = new User({ 
-            firstName, 
-            lastName,
+        const newUser = new User({
+            phone, 
             email,
             otp,
             password: hashedPassword
@@ -40,44 +39,44 @@ exports.userSignup = async (req, res) => {
     }
 }; 
 
-// exports.verifyUser = async (req, res) => {
-//     const {email} = req.query; 
-//     const {otp} = req.body;
-//     try{
-//         if(!email){
-//             return res.status(400).json({message: "Click the verification link sent to your email"})
-//         }
+exports.verifyUser = async (req, res) => {
+    const {email} = req.query; 
+    const {otp} = req.body;
+    try{
+        if(!email){
+            return res.status(400).json({message: "Click the verification link sent to your email"})
+        }
 
-//         if(!otp){
-//             return res.status(400).json({message: "Input your OTP"})
-//         }
+        if(!otp){
+            return res.status(400).json({message: "Input your OTP"})
+        }
 
-//         const existingUser = await User.findOne({email})
+        const existingUser = await User.findOne({email})
 
-//         if(!existingUser){
-//             return res.status(403).json({message: "User not found"})
-//         }
+        if(!existingUser){
+            return res.status(403).json({message: "User not found"})
+        }
 
-//         if(existingUser.otp !== otp){
-//             return res.status(403).json({message: "Invalid OTP"})
-//         }
+        if(existingUser.otp !== otp){
+            return res.status(403).json({message: "Invalid OTP"})
+        }
 
-//         existingUser.isVerified = true;
-//         existingUser.otp = null; // Clear OTP after verification
-//         await existingUser.save();
+        existingUser.isVerified = true;
+        existingUser.otp = null; // Clear OTP after verification
+        await existingUser.save();
 
-//         return res.status(200).json({message: "Email verified successfully"})
-//     }catch(error){
-//         console.log(error)
-//         res.status(500).json({message: "Server Error"})
-//     }
-// };
+        return res.status(200).json({message: "Email verified successfully"})
+    }catch(error){
+        console.log(error)
+        res.status(500).json({message: "Server Error"})
+    }
+};
 
 
 exports.userLogin = async (req, res) => {
-    const {email, password} = req.body; 
+    const {phone, email, password} = req.body; 
     try{
-        if(!email ||!password){
+        if(!phone || !email ||!password){
             return res.status(400).json({message: "Input your Login Credentials"})
         }
 
@@ -91,11 +90,7 @@ exports.userLogin = async (req, res) => {
             return res.status(403).json({message: "Invalid Credentials"})
         }
 
-       // if(existingUser.isVerified == false){
-           // return res.status(403).json({message: "Account not Verified, Check email for OTP"})
-       // }
-
-        return res.status(200).json({message: "Logged in Successfully", data: existingUser.firstName})
+        return res.status(200).json({message: "Logged in Successfully", data: phone, email})
     }catch(error){
         console.log(error)
         res.status(500).json({message: "Server Error"})
@@ -122,8 +117,7 @@ exports.forgotPassword = async (req, res) => {
         // Send OTP to user's email
         // await sendEmail(existingUser.email, "Password Reset OTP", `Your OTP is ${otp}`);
 
-        return res.status(200).json({message: "OTP sent to your email",
-                data: `https://fixitbackend-7zrf.onrender.com/api/v1/user/resetpassword?email=${existingUser.email}`})
+        return res.status(200).json({message: "OTP sent to your email"})
     }catch(error){
         console.log(error)
         res.status(500).json({message: "Server Error"})
@@ -155,3 +149,5 @@ exports.resetPassword = async (req, res) => {
         res.status(500).json({message: "Server Error"})
     }
 }; 
+
+

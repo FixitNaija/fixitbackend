@@ -62,7 +62,6 @@ exports.adminSignup = async (req, res) => {
     const { password } = req.body;
     //const adminInfo = req.headers.authorization;
     const adminInfo = req.params.token; 
-console.log(adminInfo);
 
     try {
         // Verify token from header
