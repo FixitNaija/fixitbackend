@@ -9,7 +9,7 @@ const UserSchema = new mongoose.Schema({
     otp: {type: String, default: null},
     isVerified: {type: Boolean, default: false},
     state: {type: String},
-    localGovernment: {type: String, default: null},
+    localGovernment: {type: String},
     neighborhood: {type: String, default: null},
     isNewsletterSubscribed: {type: Boolean, default: false},
     profileImage: {type: String, default: 'https://res.cloudinary.com/dwx1tdonc/image/upload/w_1000,c_fill,ar_1:1,g_auto,r_max,bo_5px_solid_red,b_rgb:262c35/v1748208985/default_icon_zynrhv.jpg'},
