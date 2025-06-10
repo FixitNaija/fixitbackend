@@ -1,11 +1,12 @@
 const User = require('../models/user.model');
+const jwt = require('jsonwebtoken');
 const { hashPassword, comparePassword } = require('../utils/hashing');
 
 
 exports.userSignup = async (req, res) => {
-    const {firstName, lastName, phone, email, password} = req.body; 
+    const {firstName, lastName, email, password, phone, state, localGovernment, neighborhood, isNewsletterSubscribed} = req.body; 
     try{
-        if(!firstName || !lastName || !phone || !email ||!password){
+        if(!firstName || !lastName || !email ||!password){
             return res.status(400).json({message: "Input your Signup Credentials"})
         }
 
@@ -18,9 +19,15 @@ exports.userSignup = async (req, res) => {
         const hashedPassword = await hashPassword(password);
         const otp = Math.floor(100000 + Math.random() * 900000).toString();
 
-        const newUser = new User({
-            phone, 
+        const newUser = new User({ 
+            firstName, 
+            lastName,
             email,
+            phone,
+            state,
+            localGovernment,
+            neighborhood,
+            isNewsletterSubscribed,
             otp,
             password: hashedPassword
         });
@@ -39,62 +46,90 @@ exports.userSignup = async (req, res) => {
     }
 }; 
 
-exports.verifyUser = async (req, res) => {
-    const {email} = req.query; 
-    const {otp} = req.body;
-    try{
-        if(!email){
-            return res.status(400).json({message: "Click the verification link sent to your email"})
-        }
+// exports.verifyUser = async (req, res) => {
+//     const {email} = req.query; 
+//     const {otp} = req.body;
+//     try{
+//         if(!email){
+//             return res.status(400).json({message: "Click the verification link sent to your email"})
+//         }
 
-        if(!otp){
-            return res.status(400).json({message: "Input your OTP"})
-        }
+//         if(!otp){
+//             return res.status(400).json({message: "Input your OTP"})
+//         }
 
-        const existingUser = await User.findOne({email})
+//         const existingUser = await User.findOne({email})
 
-        if(!existingUser){
-            return res.status(403).json({message: "User not found"})
-        }
+//         if(!existingUser){
+//             return res.status(403).json({message: "User not found"})
+//         }
 
-        if(existingUser.otp !== otp){
-            return res.status(403).json({message: "Invalid OTP"})
-        }
+//         if(existingUser.otp !== otp){
+//             return res.status(403).json({message: "Invalid OTP"})
+//         }
 
-        existingUser.isVerified = true;
-        existingUser.otp = null; // Clear OTP after verification
-        await existingUser.save();
+//         existingUser.isVerified = true;
+//         existingUser.otp = null; // Clear OTP after verification
+//         await existingUser.save();
 
-        return res.status(200).json({message: "Email verified successfully"})
-    }catch(error){
-        console.log(error)
-        res.status(500).json({message: "Server Error"})
-    }
-};
+//         return res.status(200).json({message: "Email verified successfully"})
+//     }catch(error){
+//         console.log(error)
+//         res.status(500).json({message: "Server Error"})
+//     }
+// };
 
 
 exports.userLogin = async (req, res) => {
-    const {phone, email, password} = req.body; 
-    try{
-        if(!phone || !email ||!password){
-            return res.status(400).json({message: "Input your Login Credentials"})
-        }
+  const { email, password } = req.body;
 
-        const existingUser = await User.findOne({email})
-         if(!existingUser){
-            return res.status(403).json({message: "Please Create an Account"})
-            }
-
-        const isMatch = await comparePassword(password, existingUser.password);
-        if(!isMatch){
-            return res.status(403).json({message: "Invalid Credentials"})
-        }
-
-        return res.status(200).json({message: "Logged in Successfully", data: phone, email})
-    }catch(error){
-        console.log(error)
-        res.status(500).json({message: "Server Error"})
+  try {
+    if (!email || !password) {
+      return res.status(400).json({ message: "Input your Login Credentials" });
     }
+
+    const existingUser = await User.findOne({ email });
+
+
+    if (!existingUser) {
+      return res.status(403).json({ message: "Please Create an Account" });
+    }
+
+
+    const isMatch = await comparePassword(password, existingUser.password);
+    if (!isMatch) {
+      return res.status(403).json({ message: "Invalid Credentials" });
+    }
+
+    if (existingUser.isVerified === false) {
+      return res.status(403).json({ message: "Account not Verified, Check email for OTP" });
+    }
+
+    //  Generate JWT
+    const token = jwt.sign(
+      { 
+        user: {
+          _id: existingUser._id,
+          email: existingUser.email
+        }
+      },
+      process.env.JWT_SECRET,
+      { expiresIn: process.env.JWT_EXPIRES_IN || '7d' }
+    );
+
+    //  Send token and user details
+    res.status(200).json({
+      message: "Logged in Successfully",
+      token: `Bearer ${token}`,
+      user: {
+        _id: existingUser._id
+      }
+    });
+    
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Server Error" });
+  }
 };
 
 exports.forgotPassword = async (req, res) => {
@@ -117,7 +152,8 @@ exports.forgotPassword = async (req, res) => {
         // Send OTP to user's email
         // await sendEmail(existingUser.email, "Password Reset OTP", `Your OTP is ${otp}`);
 
-        return res.status(200).json({message: "OTP sent to your email"})
+        return res.status(200).json({message: "OTP sent to your email",
+                data: `https://fixitbackend-7zrf.onrender.com/api/v1/user/resetpassword?email=${existingUser.email}`})
     }catch(error){
         console.log(error)
         res.status(500).json({message: "Server Error"})
@@ -148,6 +184,47 @@ exports.resetPassword = async (req, res) => {
         console.log(error)
         res.status(500).json({message: "Server Error"})
     }
+
 }; 
 
+exports.testid = async (req, res) => {
+    const id = req.query.id;
+    try{
+        if(!id){
+            return res.status(400).json({message: "No ID"})
+        }
+
+        const existingUser = await User.findById(id);
+        if(!existingUser){
+            return res.status(403).json({message: "User not found"})
+        }
+
+        return res.status(200).json({message: "User found", data: existingUser.firstName, email: existingUser.email})
+
+    }catch(error){
+        console.log(error)
+        res.status(500).json({message: "Server Error"})
+    }
+};
+
+
+exports.getProfile = async (req, res) => {
+  try {
+    const user = await User.findById(req.user._id).select(
+      'firstName lastName email phone state localGovernment neighborhood profileImage'
+    );
+
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    res.status(200).json({
+      message: 'Profile fetched successfully',
+      data: user
+    });
+  } catch (error) {
+    console.error('Error fetching profile:', error);
+    res.status(500).json({ message: 'Server Error' });
+  }
+};
 
