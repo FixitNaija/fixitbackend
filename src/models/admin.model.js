@@ -1,7 +1,8 @@
 const mongoose = require('mongoose');
 
 const adminSchema = new mongoose.Schema({
-    name: { type: String, required: true },
+    firstName: { type: String, required: true },
+    lastName: { type: String },
     email: { type: String, required: true, unique: true },
     password: { type: String },
     status: { type: String, enum: ['active', 'pending', 'deactivated'], default: 'pending' },
