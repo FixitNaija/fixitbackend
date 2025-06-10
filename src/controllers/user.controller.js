@@ -4,7 +4,7 @@ const { hashPassword, comparePassword } = require('../utils/hashing');
 
 
 exports.userSignup = async (req, res) => {
-    const {firstName, lastName, email, password} = req.body; 
+    const {firstName, lastName, email, password, phone, state, localGovernment, neighborhood, isNewsletterSubscribed} = req.body; 
     try{
         if(!firstName || !lastName || !email ||!password){
             return res.status(400).json({message: "Input your Signup Credentials"})
@@ -23,6 +23,11 @@ exports.userSignup = async (req, res) => {
             firstName, 
             lastName,
             email,
+            phone,
+            state,
+            localGovernment,
+            neighborhood,
+            isNewsletterSubscribed,
             otp,
             password: hashedPassword
         });

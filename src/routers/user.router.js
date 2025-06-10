@@ -9,7 +9,7 @@ const isAuthenticated = require('../middleware/isAuthenticated')
 
 router.post('/signup', userSignup);
 router.post('/login', userLogin);
-router.get('/verify', verifyUser);
+// router.get('/verify', verifyUser);
 router.post('/forgotpassword', forgotPassword);
 router.post('/resetpassword', resetPassword);
 
