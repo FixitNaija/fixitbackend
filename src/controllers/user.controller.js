@@ -101,9 +101,9 @@ exports.userLogin = async (req, res) => {
       return res.status(403).json({ message: "Invalid Credentials" });
     }
 
-    if (existingUser.isVerified === false) {
-      return res.status(403).json({ message: "Account not Verified, Check email for OTP" });
-    }
+    //if (existingUser.isVerified === false) {
+      //return res.status(403).json({ message: "Account not Verified, Check email for OTP" });
+    //}
 
     //  Generate JWT
     const token = jwt.sign(

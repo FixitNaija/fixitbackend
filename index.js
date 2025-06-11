@@ -4,6 +4,7 @@ const dotenv = require('dotenv');
 const passport = require('passport');
 const session = require('express-session');
 require('./src/middleware/googleauth');
+const cors = require('cors');
 
 
 const userRouter = require('./src/routers/user.router');
@@ -21,6 +22,7 @@ const PORT = process.env.PORT;
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use(cors()); 
 
 app.use(session({
     secret: process.env.SESSION_SECRET || 'your_session_secret',
