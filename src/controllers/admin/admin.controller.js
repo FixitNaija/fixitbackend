@@ -87,7 +87,7 @@ console.log(token);
         }
 
         // Hash password and update admin
-        const hashedPassword = await bcrypt.hash(password, 10);
+        const hashedPassword = await hashPassword(password); 
         invitedAdmin.password = hashedPassword;
         invitedAdmin.status = 'active';
         invitedAdmin.inviteToken = undefined;

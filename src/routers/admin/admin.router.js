@@ -4,7 +4,7 @@ const isAuthenticated = require('../../middleware/isAuthenticated');
 const router = express.Router();
 
 
-router.post('/inviteadmin', isAuthenticated, inviteAdmin);
+router.post('/inviteadmin', inviteAdmin);
 router.post('/adminsignup/:token', isAuthenticated, adminSignup); 
 
 
