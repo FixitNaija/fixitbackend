@@ -29,7 +29,7 @@ exports.inviteAdmin = async (req, res) => {
 
         const existingAdmin = await Admin.findOne({ email });
         if (existingAdmin) {
-            return res.status(400).json({ message: 'Admin with this email already exists' }); 
+            return res.status(403).json({ message: 'Admin with this email already exists' }); 
     }
 
         // Create signup token to encrypt email and firstName 
