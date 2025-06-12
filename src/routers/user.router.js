@@ -12,8 +12,6 @@ router.post('/login', userLogin);
 //router.get('/verify', verifyUser);
 router.post('/forgotpassword', forgotPassword);
 router.post('/resetpassword', resetPassword);
-
-router.get('/test', testid); 
 router.get('/profile', isAuthenticated, getProfile);
 
 

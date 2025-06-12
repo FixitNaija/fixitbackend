@@ -36,7 +36,7 @@ exports.inviteAdmin = async (req, res) => {
         const signupToken = jwt.sign({ email, firstName }, process.env.SECRET_KEY,{ expiresIn: '1hr' }); 
     
         //generate signuplink 
-        const signupLink = `http://localhost:${process.env.PORT}/api/v1/admin/signup/${signupToken}`;
+        const signupLink = `https://fixitbackend-7zrf.onrender.com/api/v1/admin/signup/${signupToken}`;
 
     
         const invitedAdmin = new Admin({
@@ -60,17 +60,16 @@ exports.inviteAdmin = async (req, res) => {
 
 exports.adminSignup = async (req, res) => {
     const { password } = req.body;
-    //const adminInfo = req.headers.authorization;
-    const adminInfo = req.params.token; 
-console.log(adminInfo);
+    const token = req.headers.authorization;
+    //const adminInfo = req.params.token; 
+console.log(token);
 
     try {
-        // Verify token from header
-        if (!adminInfo) {
+        if (!token) {
             return res.status(401).json({ message: 'Unauthorized' });
         }
 
-        const token = adminInfo.split(' ')[1]; 
+        const adminInfo = token.split(' ')[1]; 
         const decoded = jwt.verify(adminInfo, process.env.SECRET_KEY);
         const { email } = decoded;
 
@@ -106,11 +105,6 @@ console.log(adminInfo);
 
     } catch (error) {
         console.log(error);
-        
-        console.error('Admin signup error:', error);
-        if (error.name === 'JsonWebTokenError') {
-            return res.status(401).json({ message: 'Invalid token' });
-        }
         return res.status(500).json({ message: 'Server Error' });
     }
 };
