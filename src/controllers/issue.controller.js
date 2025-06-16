@@ -51,7 +51,7 @@ exports.createIssue = async (req, res) => {
         }
 
         if(newIssue.images.length === 0) {
-            return res.status(400).json({ message: "Please upload at least one image" });
+            return res.status(403).json({ message: "Please upload at least one image" });
         }
 
         await newIssue.save();
