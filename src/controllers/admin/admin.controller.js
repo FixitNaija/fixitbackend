@@ -60,8 +60,8 @@ exports.inviteAdmin = async (req, res) => {
 
 exports.adminSignup = async (req, res) => {
     const { password } = req.body;
-    const token = req.headers.authorization;
-    //const adminInfo = req.params.token; 
+    //const token = req.headers.authorization;
+    const token = req.query.token; 
 console.log(token);
 
     try {
@@ -110,7 +110,7 @@ console.log(token);
 };
 
 
-exports.Adminlogin = async (req, res) => {
+exports.adminLogin = async (req, res) => {
     const { email, password } = req.body;
 
     try {
