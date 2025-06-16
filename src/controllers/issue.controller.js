@@ -20,9 +20,6 @@ exports.createIssue = async (req, res) => {
             return res.status(404).json({ message: "User not found" });
         }
 
-        console.log(req.body);
-        console.log(user);
-
         // Upload multiple images to Cloudinary
         let imageUrls = [];
         if (req.files && req.files.length > 0) {
