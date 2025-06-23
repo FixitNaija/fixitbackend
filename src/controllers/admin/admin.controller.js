@@ -1,4 +1,5 @@
 const Admin = require('../../models/admin.model');
+const Issue = require('../../models/issue.model'); 
 const { hashPassword, comparePassword } = require('../../utils/hashing');
 const jwt = require('jsonwebtoken');
 const mongoose = require('mongoose');
@@ -144,4 +145,27 @@ exports.adminLogin = async (req, res) => {
         console.error('Login error:', error);
         return res.status(500).json({ message: 'Failed to log in' });
     }
-}
+};
+
+exports.adminChangeStatus = async (req, res) => {
+    const id = req.query.id;
+    const status = req.body; 
+    try {
+        const issue = await Issue.findById(id)
+        if (!issue) {
+            return res.status(404).json({ message: "Issue not found" });
+        }
+
+        if(status == ' '){
+            return res.status(403).json({message: "Update status before you save"})
+        }
+
+        issue.status = status;
+        await issue.save();
+
+        res.status(200).json({ message: "Issue retrieved successfully", data: issue });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: "Server Error" });
+    }
+};

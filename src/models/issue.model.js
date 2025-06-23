@@ -1,6 +1,7 @@
 const mongoose = require('mongoose'); 
 
 const issueSchema = new mongoose.Schema({
+    issueID: {type: String, required: true, unique: true},
     title: {type: String, required: true},
     description: {type: String, required: true}, 
     category: { type: String, enum: ['Road Damage', 'Clogged Drainage', 'Streetlight Issue'], 

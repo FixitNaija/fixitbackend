@@ -3,6 +3,7 @@ const Issue = require('../models/issue.model');
 const User = require('../models/user.model');
 const cloudinary = require('../utils/cloudinary');
 const path = require('path');
+const genID = require('../utils/nanoid'); 
 
 exports.createIssue = async (req, res) => {
     const { title, description, category, state, location } = req.body;
@@ -31,7 +32,10 @@ exports.createIssue = async (req, res) => {
             }
         }
 
+        const issueID = genID(); 
+
         const newIssue = new Issue({
+            issueID : issueID,
             title,
             description,
             category,
@@ -67,9 +71,9 @@ exports.createIssue = async (req, res) => {
 }; 
 
 exports.getSingleIssue = async (req, res) => {
-    const id = req.query.id;
+    const {issueID} = req.params;
     try {
-        const issue = await Issue.findById(id)
+        const issue = await Issue.findOne(issueID)
             .populate('comments', 'author content upvotes createdAt')
 
         if (!issue) {
