@@ -65,7 +65,7 @@ exports.createIssue = async (req, res) => {
 
         res.status(201).json({ message: "Report created successfully", data: newIssue });
     } catch (error) {
-        console.error(error);
+        console.log(error);
         res.status(500).json({ message: "Server Error" });
     }
 }; 
@@ -73,8 +73,8 @@ exports.createIssue = async (req, res) => {
 exports.getSingleIssue = async (req, res) => {
     const {issueID} = req.params;
     try {
-        const issue = await Issue.findOne(issueID)
-            .populate('comments', 'author content upvotes createdAt')
+        const issue = await Issue.findOne({issueID})
+            .populate('comments', 'author content upvotes createdAt') 
 
         if (!issue) {
             return res.status(404).json({ message: "Issue not found" });
@@ -82,7 +82,7 @@ exports.getSingleIssue = async (req, res) => {
 
         res.status(200).json({ message: "Issue retrieved successfully", data: issue });
     } catch (error) {
-        console.error(error);
+        console.log(error);
         res.status(500).json({ message: "Server Error" });
     }
 };
@@ -95,10 +95,10 @@ exports.myIssues = async (req, res) => {
                                   .sort({ reportdate: -1 });
         res.status(200).json({ message: "Issues retrieved successfully", data: issues });
     } catch (error) {
-        console.error(error);
+        console.log(error);
         res.status(500).json({ message: "Server Error" });
     }
-};
+}; 
 
 
 exports.getAllIssues = async (req, res) => {
@@ -110,7 +110,7 @@ exports.getAllIssues = async (req, res) => {
 
         res.status(200).json({ message: "All issues retrieved successfully", data: issues });
     } catch (error) {
-        console.error(error);
+        console.log(error);
         res.status(500).json({ message: "Server Error" });
     }
 };

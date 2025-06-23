@@ -106,18 +106,15 @@ exports.userLogin = async (req, res) => {
     //}
 
     //  Generate JWT
-    const token = jwt.sign({ user: {_id: existingUser._id, email: existingUser.email} },
+    const token = jwt.sign({ user: {name: existingUser.firstName, email: existingUser.email} },
       process.env.JWT_SECRET,
       { expiresIn:'7d' }
     );
 
     //  Send token and user details
-    res.status(200).json({
-      message: "Logged in Successfully",
-      token: `Bearer ${token}`,
-      user: {
-        _id: existingUser._id
-      }
+    res.status(200).json({message: "Logged in Successfully",
+       token: token,
+       user: {name: existingUser.firstName, email: existingUser.email}
     });
     
   } catch (error) {
