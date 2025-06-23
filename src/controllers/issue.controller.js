@@ -142,7 +142,7 @@ exports.upvoteIssue = async (req, res) => {
 
         // Add user to whoUpvoted and save
         upvote.whoUpvoted.push(userID);
-        await upvote.save();
+        await upvote.save(); 
 
         res.status(200).json({ message: 'Upvoted successfully' });
     } catch (error) {

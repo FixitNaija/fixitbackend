@@ -36,48 +36,47 @@ exports.userSignup = async (req, res) => {
         // await sendEmail(newUser.email, "OTP Verification", `Your OTP is ${otp}`);
 
         await newUser.save();
-        return res
-        .status(201)
+        return res.status(201)
         .json({message: "Account created successfully, Check your email for OTP verification", 
-            data: firstName, email})
+            data: firstName, email, otp})
     }catch(error){
         console.log(error)
         res.status(500).json({message: "Server Error"})
     }
 }; 
 
-// exports.verifyUser = async (req, res) => {
-//     const {email} = req.query; 
-//     const {otp} = req.body;
-//     try{
-//         if(!email){
-//             return res.status(400).json({message: "Click the verification link sent to your email"})
-//         }
+exports.verifyUser = async (req, res) => {
+    const {email} = req.query; 
+    const {otp} = req.body;
+    try{
+        if(!email){
+            return res.status(400).json({message: "Click the verification link sent to your email"})
+        }
 
-//         if(!otp){
-//             return res.status(400).json({message: "Input your OTP"})
-//         }
+        if(!otp){
+            return res.status(400).json({message: "Input your OTP"})
+        }
 
-//         const existingUser = await User.findOne({email})
+        const existingUser = await User.findOne({email})
 
-//         if(!existingUser){
-//             return res.status(403).json({message: "User not found"})
-//         }
+        if(!existingUser){
+            return res.status(403).json({message: "User not found"})
+        }
 
-//         if(existingUser.otp !== otp){
-//             return res.status(403).json({message: "Invalid OTP"})
-//         }
+        if(existingUser.otp !== otp){
+            return res.status(403).json({message: "Invalid OTP"})
+        }
 
-//         existingUser.isVerified = true;
-//         existingUser.otp = null; // Clear OTP after verification
-//         await existingUser.save();
+        existingUser.isVerified = true;
+        existingUser.otp = null; // Clear OTP after verification
+        await existingUser.save();
 
-//         return res.status(200).json({message: "Email verified successfully"})
-//     }catch(error){
-//         console.log(error)
-//         res.status(500).json({message: "Server Error"})
-//     }
-// };
+        return res.status(200).json({message: "Email verified successfully"})
+    }catch(error){
+        console.log(error)
+        res.status(500).json({message: "Server Error"})
+    }
+};
 
 
 exports.userLogin = async (req, res) => {
@@ -105,13 +104,12 @@ exports.userLogin = async (req, res) => {
       //return res.status(403).json({ message: "Account not Verified, Check email for OTP" });
     //}
 
-    //  Generate JWT
     const token = jwt.sign({ user: {name: existingUser.firstName, email: existingUser.email} },
       process.env.JWT_SECRET,
       { expiresIn:'7d' }
     );
 
-    //  Send token and user details
+  
     res.status(200).json({message: "Logged in Successfully",
        token: token,
        user: {name: existingUser.firstName, email: existingUser.email}
