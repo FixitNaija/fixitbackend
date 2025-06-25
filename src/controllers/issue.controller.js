@@ -116,10 +116,11 @@ exports.getAllIssues = async (req, res) => {
 };
 
 exports.upvoteIssue = async (req, res) => {
-    const {issueID, userID}  = req.query;
+    const {issueID} = req.params;
+    const {userID}  = req.query;
 
     try {
-        const validIssue = await Issue.findById(issueID);
+        const validIssue = await Issue.find({issueID});
         if (!validIssue) {
             return res.status(404).json({ message: "Issue not found" });
         }
@@ -131,7 +132,7 @@ exports.upvoteIssue = async (req, res) => {
             // If no upvote document exists for this issue, create a new one
             upvote = new Upvote({ issue: issueID, whoUpvoted: [userID] });
             await upvote.save();
-            await Issue.findByIdAndUpdate(issueID, { $push: { upvotes: upvote._id } });
+            await Issue.findByIdAndUpdate(issue._id, { $push: { upvotes: upvote._id } });
             return res.status(200).json({ message: 'Upvoted successfully' });
         }
 
@@ -149,6 +150,8 @@ exports.upvoteIssue = async (req, res) => {
         res.status(500).json({ message: 'Server error' });
     }
 };
+
+
 
 
 
