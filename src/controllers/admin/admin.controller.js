@@ -54,15 +54,14 @@ exports.inviteAdmin = async (req, res) => {
         return res.status(200).json({ message: 'Invite link generated successfully', signupLink, expiresIn: '1 hour' }); 
 
     } catch (error) {
-        console.error('Invite admin error:', error);
+        console.log('Invite admin error:', error);
         return res.status(500).json({ message: 'Failed to generate invite link' });
     }
 }; 
 
 exports.adminSignup = async (req, res) => {
     const { password } = req.body;
-    //const token = req.headers.authorization;
-    const token = req.query.token; 
+    const {token} = req.params;
 console.log(token);
 
     try {

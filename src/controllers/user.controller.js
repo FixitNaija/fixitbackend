@@ -38,7 +38,8 @@ exports.userSignup = async (req, res) => {
         await newUser.save();
         return res.status(201)
         .json({message: "Account created successfully, Check your email for OTP verification", 
-            data: firstName, email, otp,  //remove otp response in production
+             data: firstName, email,
+             otp: otp,  //remove otp response in production
              redirectLink: `https://fixitbackend-7zrf.onrender.com/api/v1/user/verify?email=${newUser.email}`}); 
     }catch(error){
         console.log(error)
@@ -110,7 +111,6 @@ exports.userLogin = async (req, res) => {
       { expiresIn:'7d' }
     );
 
-  
     res.status(200).json({message: "Logged in Successfully",
        token: token,
        user: {name: existingUser.firstName, email: existingUser.email}

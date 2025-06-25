@@ -5,11 +5,11 @@ const User = require('../models/user.model');
 // Create a new comment on an issue
 exports.createComment = async (req, res) => {
   const { content, authorId, isAnonymous } = req.body;
-  const { issueId } = req.params;
+  const { issueID } = req.params;
 
   try {
     const user = await User.findById(authorId);
-    const issue = await Issue.findById(issueId);
+    const issue = await Issue.findOne({issueID});
 
     if (!user || !issue) {
       return res.status(404).json({ message: 'User or issue not found' });
