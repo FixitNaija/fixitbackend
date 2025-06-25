@@ -61,8 +61,8 @@ exports.inviteAdmin = async (req, res) => {
 
 exports.adminSignup = async (req, res) => {
     const { password } = req.body;
-    const {token} = req.params;
-console.log(token);
+    const { token } = req.params;
+    console.log(req.params.token);
 
     try {
         if (!token) {

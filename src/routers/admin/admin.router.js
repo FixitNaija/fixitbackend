@@ -8,4 +8,4 @@ router.post('/inviteadmin', inviteAdmin);
 router.post('/signup/:token', adminSignup);
 router.post('/login', isAuthenticated, adminLogin);
 
-module.exports = router;
+module.exports = router; 
