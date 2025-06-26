@@ -1,4 +1,4 @@
-const Admin = require('../../models/admin.model');
+const Admin = require('../../models/admin/admin.model');
 const Issue = require('../../models/issue.model'); 
 const { hashPassword, comparePassword } = require('../../utils/hashing');
 const jwt = require('jsonwebtoken');
@@ -34,7 +34,7 @@ exports.inviteAdmin = async (req, res) => {
     }
 
         // Create signup token to encrypt email and firstName 
-        const signupToken = jwt.sign({ email, firstName }, process.env.SECRET_KEY,{ expiresIn: '1hr' }); 
+        const signupToken = jwt.sign({ email, firstName }, process.env.JWT_SECRET,{ expiresIn: '1hr' }); 
     
         //generate signuplink 
         const signupLink = `https://fixitbackend-7zrf.onrender.com/api/v1/admin/signup/${signupToken}`;
@@ -69,7 +69,7 @@ exports.adminSignup = async (req, res) => {
         }
 
         //const adminInfo = token.split(' ')[1];
-        const decoded = jwt.verify(token, process.env.SECRET_KEY);
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
         const { email } = decoded;
 
         // Find invited admin
@@ -108,6 +108,15 @@ exports.adminSignup = async (req, res) => {
     }
 };
 
+exports.adminDashboard = async (req, res) => {
+    try {
+        const issues = await Issue.find().populate('reportedBy', 'firstName lastName'); 
+        return res.status(200).json({ message: 'Issues retrieved successfully', data: issues });
+    } catch (error) {
+        console.log('Error retrieving issues:', error);
+        return res.status(500).json({ message: 'Server Error' });
+    }
+};
 
 exports.adminLogin = async (req, res) => {
     const { email, password } = req.body;
@@ -134,7 +143,7 @@ exports.adminLogin = async (req, res) => {
         }
 
         const token = jwt.sign({ email: admin.email, role: admin.role }, 
-                      process.env.SECRET_KEY, { expiresIn: process.env.JWT_EXPIRATION_ADMIN });
+                      process.env.JWT_SECRET, { expiresIn: process.env.JWT_EXPIRATION_ADMIN });
 
         return res.status(200).json({ message: 'Login successful', token });
 

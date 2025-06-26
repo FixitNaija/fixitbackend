@@ -9,8 +9,10 @@ const issueSchema = new mongoose.Schema({
     location: {type: String, required: true},
     images: {type: String, required: true},
     status: {type: String, enum: ['Reported', 'Acknowledged','In Progress', 'Resolved'], default: 'Open'},
-    reportdate: {type: Date, default: Date.now},
-    reportby: [{type: mongoose.Schema.Types.ObjectId, ref: 'firstName'}], 
+    reportDate: {type: Date, default: Date.now},
+    reportedBy: [{type: mongoose.Schema.Types.ObjectId, ref: 'User'}],
+    comments: [{type: mongoose.Schema.Types.ObjectId, ref: 'Comment'}],
+    upvotes: [{type: mongoose.Schema.Types.ObjectId, ref: 'Upvote'}]
 },
 
     {timestamps: true} 
