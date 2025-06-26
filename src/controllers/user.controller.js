@@ -1,6 +1,7 @@
 const User = require('../models/user.model');
 const jwt = require('jsonwebtoken');
 const { hashPassword, comparePassword } = require('../utils/hashing');
+const { sendSignupOTP } = require('../services/email/emailsender');
 
 
 exports.userSignup = async (req, res) => {
@@ -19,9 +20,8 @@ exports.userSignup = async (req, res) => {
         const hashedPassword = await hashPassword(password);
         const otp = Math.floor(100000 + Math.random() * 900000).toString();
 
-        const newUser = new User({ 
-            firstName, 
-            lastName,
+        const newUser = new User({
+            phone, 
             email,
             phone,
             state,
@@ -33,7 +33,7 @@ exports.userSignup = async (req, res) => {
         });
 
         // Send OTP to user's email
-        // await sendEmail(newUser.email, "OTP Verification", `Your OTP is ${otp}`);
+         await sendSignupOTP(newUser.email, otp);
 
         await newUser.save();
         return res.status(201)
@@ -106,10 +106,8 @@ exports.userLogin = async (req, res) => {
       return res.status(403).json({ message: "Account not Verified, Check email for OTP" });
     }
 
-    const token = jwt.sign({ user: {name: existingUser.firstName, email: existingUser.email} },
-      process.env.JWT_SECRET,
-      { expiresIn:'7d' }
-    );
+    const token = jwt.sign({name: existingUser.firstName, email: existingUser.email},
+                  process.env.JWT_SECRET, { expiresIn: process.env.JWT_EXPIRATION_USER });
 
     res.status(200).json({message: "Logged in Successfully",
        token: token,
