@@ -1,4 +1,5 @@
 const Admin = require('../../models/admin.model');
+const Issue = require('../../models/issue.model'); 
 const { hashPassword, comparePassword } = require('../../utils/hashing');
 const jwt = require('jsonwebtoken');
 const mongoose = require('mongoose');
@@ -29,14 +30,14 @@ exports.inviteAdmin = async (req, res) => {
 
         const existingAdmin = await Admin.findOne({ email });
         if (existingAdmin) {
-            return res.status(400).json({ message: 'Admin with this email already exists' }); 
+            return res.status(403).json({ message: 'Admin with this email already exists' }); 
     }
 
         // Create signup token to encrypt email and firstName 
         const signupToken = jwt.sign({ email, firstName }, process.env.SECRET_KEY,{ expiresIn: '1hr' }); 
     
         //generate signuplink 
-        const signupLink = `http://localhost:${process.env.PORT}/api/v1/admin/signup/${signupToken}`;
+        const signupLink = `https://fixitbackend-7zrf.onrender.com/api/v1/admin/signup/${signupToken}`;
 
     
         const invitedAdmin = new Admin({
@@ -53,24 +54,22 @@ exports.inviteAdmin = async (req, res) => {
         return res.status(200).json({ message: 'Invite link generated successfully', signupLink, expiresIn: '1 hour' }); 
 
     } catch (error) {
-        console.error('Invite admin error:', error);
+        console.log('Invite admin error:', error);
         return res.status(500).json({ message: 'Failed to generate invite link' });
     }
 }; 
 
 exports.adminSignup = async (req, res) => {
     const { password } = req.body;
-    //const adminInfo = req.headers.authorization;
-    const adminInfo = req.params.token; 
+    const { token } = req.params;
 
     try {
-        // Verify token from header
-        if (!adminInfo) {
+        if (!token) {
             return res.status(401).json({ message: 'Unauthorized' });
         }
 
-        const token = adminInfo.split(' ')[1]; 
-        const decoded = jwt.verify(adminInfo, process.env.SECRET_KEY);
+        //const adminInfo = token.split(' ')[1];
+        const decoded = jwt.verify(token, process.env.SECRET_KEY);
         const { email } = decoded;
 
         // Find invited admin
@@ -87,7 +86,7 @@ exports.adminSignup = async (req, res) => {
         }
 
         // Hash password and update admin
-        const hashedPassword = await bcrypt.hash(password, 10);
+        const hashedPassword = await hashPassword(password); 
         invitedAdmin.password = hashedPassword;
         invitedAdmin.status = 'active';
         invitedAdmin.inviteToken = undefined;
@@ -105,17 +104,12 @@ exports.adminSignup = async (req, res) => {
 
     } catch (error) {
         console.log(error);
-        
-        console.error('Admin signup error:', error);
-        if (error.name === 'JsonWebTokenError') {
-            return res.status(401).json({ message: 'Invalid token' });
-        }
         return res.status(500).json({ message: 'Server Error' });
     }
 };
 
 
-exports.Adminlogin = async (req, res) => {
+exports.adminLogin = async (req, res) => {
     const { email, password } = req.body;
 
     try {
@@ -146,7 +140,30 @@ exports.Adminlogin = async (req, res) => {
         return res.status(200).json({ message: 'Login successful', token });
 
     } catch (error) {
-        console.error('Login error:', error);
+        console.log('Login error:', error);
         return res.status(500).json({ message: 'Failed to log in' });
     }
-}
+};
+
+exports.adminChangeStatus = async (req, res) => {
+    const id = req.query.id;
+    const status = req.body; 
+    try {
+        const issue = await Issue.findById(id)
+        if (!issue) {
+            return res.status(404).json({ message: "Issue not found" });
+        }
+
+        if(status == ' '){
+            return res.status(403).json({message: "Update status before you save"})
+        }
+
+        issue.status = status;
+        await issue.save();
+
+        res.status(200).json({ message: "Issue retrieved successfully", data: issue });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: "Server Error" });
+    }
+};
