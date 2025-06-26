@@ -105,10 +105,8 @@ exports.userLogin = async (req, res) => {
       return res.status(403).json({ message: "Account not Verified, Check email for OTP" });
     }
 
-    const token = jwt.sign({ user: {name: existingUser.firstName, email: existingUser.email} },
-      process.env.JWT_SECRET,
-      { expiresIn:'7d' }
-    );
+    const token = jwt.sign({name: existingUser.firstName, email: existingUser.email},
+                  process.env.JWT_SECRET, { expiresIn: process.env.JWT_EXPIRATION_USER });
 
     res.status(200).json({message: "Logged in Successfully",
        token: token,

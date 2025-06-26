@@ -2,17 +2,16 @@ const jwt = require('jsonwebtoken');
 
 module.exports = (req, res, next) => {
   try {
-    const { token } = req.header.authorization //('Authorization')?.replace('Bearer ', '');
-    if (!token) {
+    const authHeader = req.headers['authorization'];
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
       return res.status(401).json({ message: 'No token, authorization denied' });
     }
 
+    const token = authHeader.split(' ')[1];
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    if (!decoded.user) {
-      return res.status(401).json({ message: 'Invalid token structure' });
-    }
-    
-    req.user = decoded.user;
+
+    // Attach the whole decoded payload or just user info as needed
+    req.user = decoded.user || decoded;
     next();
   } catch (err) {
     console.error('Authentication error:', err);

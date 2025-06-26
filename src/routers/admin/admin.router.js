@@ -6,6 +6,7 @@ const router = express.Router();
 
 router.post('/inviteadmin', inviteAdmin);
 router.post('/signup/:token', adminSignup);
-router.post('/login', isAuthenticated, adminLogin);
+router.post('/login', adminLogin);
+router.post('/admindashboard', isAuthenticated, adminDashboard);
 
 module.exports = router; 

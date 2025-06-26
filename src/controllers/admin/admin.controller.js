@@ -117,8 +117,7 @@ exports.adminLogin = async (req, res) => {
             return res.status(400).json({ message: 'Email and password are required' });
         }
 
-        // Find the admin by email
-        const admin = await Admin.findOne({ email });
+        const admin = await Admin.findOne({ email }); 
         if (!admin) {
             return res.status(404).json({ message: 'Admin not found' });
         }
@@ -134,8 +133,8 @@ exports.adminLogin = async (req, res) => {
             return res.status(401).json({ message: 'Invalid credentials' });
         }
 
-        // Generate JWT token
-        const token = jwt.sign({ id: admin._id, role: admin.role }, process.env.SECRET_KEY, { expiresIn: '1d' });
+        const token = jwt.sign({ email: admin.email, role: admin.role }, 
+                      process.env.SECRET_KEY, { expiresIn: process.env.JWT_EXPIRATION_ADMIN });
 
         return res.status(200).json({ message: 'Login successful', token });
 
