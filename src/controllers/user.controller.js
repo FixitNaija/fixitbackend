@@ -1,6 +1,7 @@
 const User = require('../models/user.model');
 const jwt = require('jsonwebtoken');
 const { hashPassword, comparePassword } = require('../utils/hashing');
+const { sendSignupOTP } = require('../services/email/emailsender');
 
 
 exports.userSignup = async (req, res) => {
@@ -32,7 +33,7 @@ exports.userSignup = async (req, res) => {
         });
 
         // Send OTP to user's email
-        // await sendEmail(newUser.email, "OTP Verification", `Your OTP is ${otp}`);
+         await sendSignupOTP(newUser.email, otp);
 
         await newUser.save();
         return res.status(201)
