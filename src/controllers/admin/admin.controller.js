@@ -62,15 +62,14 @@ exports.inviteAdmin = async (req, res) => {
 exports.adminSignup = async (req, res) => {
     const { password } = req.body;
     const { token } = req.params;
-    console.log(req.params.token);
 
     try {
         if (!token) {
             return res.status(401).json({ message: 'Unauthorized' });
         }
 
-        const adminInfo = token.split(' ')[1]; 
-        const decoded = jwt.verify(adminInfo, process.env.SECRET_KEY);
+        //const adminInfo = token.split(' ')[1];
+        const decoded = jwt.verify(token, process.env.SECRET_KEY);
         const { email } = decoded;
 
         // Find invited admin
@@ -141,7 +140,7 @@ exports.adminLogin = async (req, res) => {
         return res.status(200).json({ message: 'Login successful', token });
 
     } catch (error) {
-        console.error('Login error:', error);
+        console.log('Login error:', error);
         return res.status(500).json({ message: 'Failed to log in' });
     }
 };
