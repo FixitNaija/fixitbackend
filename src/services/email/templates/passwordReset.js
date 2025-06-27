@@ -16,14 +16,14 @@ const passwordResetOTP = (otp, passwordResetLink) => {
 <body>
   <div class="container">
     <h2>Password Reset Request</h2>
-    <p>We received a request to reset your password for your FixIt Naija account.</p>
+    <p>We received a request to reset your password for your Fixit Naija account.</p>
     <p>Please use the One-Time Password (OTP) below to reset your password:</p>
     <div class="otp">${otp}</div>
     <p>Or click the button below to reset your password:</p>
     <a href="${passwordResetLink}" class="reset-link">Reset Password</a>
     <p>This OTP is valid for the next 10 minutes. If you did not request a password reset, please ignore this email.</p>
     <div class="footer">
-      &copy; ${currentYear} FixIt Naija. All rights reserved.
+      &copy; ${currentYear} Fixit Naija. All rights reserved.
     </div>
   </div>
 </body>

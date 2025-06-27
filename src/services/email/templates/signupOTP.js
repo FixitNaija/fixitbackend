@@ -15,7 +15,7 @@ const signupOTP = (otp, verificationLink) => {
 </head>
 <body>
   <div class="container">
-    <h2>Welcome to FixIt Naija!</h2>
+    <h2>Welcome to Fixit Naija!</h2>
     <p>Thank you for signing up. To verify your account, please use the One-Time Password (OTP) below:</p>
     <div class="otp">${otp}</div>
     <p>Or click the button below to verify your account:</p>
@@ -23,7 +23,7 @@ const signupOTP = (otp, verificationLink) => {
     <p>This OTP is valid for the next 10 minutes. Please do not share it with anyone.</p>
     <p>If you did not request this, please ignore this email.</p>
     <div class="footer">
-      &copy; ${currentYear} FixIt. All rights reserved.
+      &copy; ${currentYear} Fixit. All rights reserved.
     </div>
   </div>
 </body>
