@@ -8,9 +8,9 @@ const signupOTP = (otp, verificationLink) => {
   <style>
     body { font-family: Arial, sans-serif; background: #f7f7f7; margin: 0; padding: 0; }
     .container { max-width: 400px; margin: 40px auto; background: #fff; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); padding: 32px; }
-    .otp { font-size: 2em; letter-spacing: 8px; color: #2d7ff9; margin: 24px 0; }
+    .otp { font-size: 2em; letter-spacing: 8px; color:rgb(17, 200, 39); margin: 24px 0; }
     .footer { font-size: 0.9em; color: #888; margin-top: 32px; }
-    .verify-link { display: inline-block; margin: 20px 0; padding: 12px 24px; background: #2d7ff9; color: #fff; text-decoration: none; border-radius: 4px; font-weight: bold; }
+    .verify-link { display: inline-block; margin: 20px 0; padding: 12px 24px; background:rgb(25, 202, 16); color: #fff; text-decoration: none; border-radius: 4px; font-weight: bold; }
   </style>
 </head>
 <body>
