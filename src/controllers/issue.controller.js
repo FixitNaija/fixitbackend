@@ -8,7 +8,7 @@ const { sendNewIssueNotification } = require('../services/email/emailsender');
 
 exports.createIssue = async (req, res) => {
     const { title, description, category, state, location } = req.body;
-    const id = req.query.id;
+    const email = req.user.email; 
     const images = req.files;
 
     try {
@@ -17,7 +17,7 @@ exports.createIssue = async (req, res) => {
         }
 
         // Find the user and attach the issue to the reporting user
-        const user = await User.findById(id);
+        const user = await User.findOne({ email });
         if (!user) {
             return res.status(404).json({ message: "User not found" });
         }

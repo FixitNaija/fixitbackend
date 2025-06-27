@@ -5,7 +5,7 @@ const { sendSignupOTP, sendPasswordResetOTP } = require('../services/email/email
 
 
 exports.userSignup = async (req, res) => {
-    const {firstName, lastName, email, password, phone, state, localGovernment, neighborhood, isNewsletterSubscribed} = req.body; 
+    const {firstName, lastName, email, password, state, localGovernment, neighborhood, isNewsletterSubscribed} = req.body; 
     try{
         if(!firstName || !lastName || !email ||!password){
             return res.status(400).json({message: "Input your Signup Credentials"})
@@ -21,9 +21,9 @@ exports.userSignup = async (req, res) => {
         const otp = Math.floor(100000 + Math.random() * 900000).toString();
 
         const newUser = new User({
-            phone, 
+            firstName,
+            lastName, 
             email,
-            phone,
             state,
             localGovernment,
             neighborhood,
