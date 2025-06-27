@@ -17,7 +17,7 @@ exports.userSignup = async (req, res) => {
             }
 
 
-        const hashedPassword = await hashPassword(password);
+        //const hashedPassword = await hashPassword(password);
         const otp = Math.floor(100000 + Math.random() * 900000).toString();
 
         const newUser = new User({
@@ -29,17 +29,17 @@ exports.userSignup = async (req, res) => {
             neighborhood,
             isNewsletterSubscribed,
             otp,
-            password: hashedPassword
+            password //: hashedPassword
         });
 
-        // Send OTP to user's email
-         await sendSignupOTP(newUser.email, otp);
+        // Send OTP and verification link to user's email
+        const verificationLink = `https://fixitbackend-7zrf.onrender.com/api/v1/user/verify?email=${newUser.email}`;
+        await sendSignupOTP(newUser.email, otp, verificationLink); 
 
         await newUser.save();
         return res.status(201)
-        .json({message: "Account created successfully, Check your email for OTP verification", 
+        .json({message: "Account created successfully, Check your email for OTP and verify your account", 
              data: firstName, email,
-             otp: otp,  //remove otp response in production
              redirectLink: `https://fixitbackend-7zrf.onrender.com/api/v1/user/verify?email=${newUser.email}`}); 
     }catch(error){
         console.log(error)
@@ -52,11 +52,11 @@ exports.verifyUser = async (req, res) => {
     const {otp} = req.body;
     try{
         if(!email){
-            return res.status(400).json({message: "Click the verification link sent to your email"})
+            return res.status(400).json({message: "Check your email for verification link"})
         }
 
         if(!otp){
-            return res.status(400).json({message: "Input your OTP"})
+            return res.status(400).json({message: "Check your email for OTP and Input your OTP"})
         }
 
         const existingUser = await User.findOne({email})
@@ -90,7 +90,6 @@ exports.userLogin = async (req, res) => {
     }
 
     const existingUser = await User.findOne({ email });
-
 
     if (!existingUser) {
       return res.status(403).json({ message: "Please Create an Account" });
@@ -138,10 +137,12 @@ exports.forgotPassword = async (req, res) => {
         await existingUser.save();
 
         // Send OTP to user's email
+        const passwordResetLink = `https://fixitbackend-7zrf.onrender.com/api/v1/user/resetpassword?email=${existingUser.email}`;
+        
         // await sendEmail(existingUser.email, "Password Reset OTP", `Your OTP is ${otp}`);
 
         return res.status(200).json({message: "OTP sent to your email",
-                data: `https://fixitbackend-7zrf.onrender.com/api/v1/user/resetpassword?email=${existingUser.email}`,
+                redirectLink: `https://fixitbackend-7zrf.onrender.com/api/v1/user/resetpassword?email=${existingUser.email}`,
                 otp: otp });
     }catch(error){
         console.log(error)
