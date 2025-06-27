@@ -4,6 +4,7 @@ const User = require('../models/user.model');
 const cloudinary = require('../utils/cloudinary');
 const path = require('path');
 const genID = require('../utils/nanoid'); 
+const { sendNewIssueNotification } = require('../services/email/emailsender');
 
 exports.createIssue = async (req, res) => {
     const { title, description, category, state, location } = req.body;
@@ -62,6 +63,9 @@ exports.createIssue = async (req, res) => {
 
         // Update the user's myIssues tab
         await User.findByIdAndUpdate(user._id, { $push: { myIssues: newIssue._id } });
+
+        // Send email notification to the user
+        await sendNewIssueNotification(user.firstName, user.email, newIssue);
 
         res.status(201).json({ message: "Report created successfully", data: newIssue });
     } catch (error) {

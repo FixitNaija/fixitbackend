@@ -1,7 +1,7 @@
 const User = require('../models/user.model');
 const jwt = require('jsonwebtoken');
 const { hashPassword, comparePassword } = require('../utils/hashing');
-const { sendSignupOTP } = require('../services/email/emailsender');
+const { sendSignupOTP, sendPasswordResetOTP } = require('../services/email/emailsender');
 
 
 exports.userSignup = async (req, res) => {
@@ -17,7 +17,7 @@ exports.userSignup = async (req, res) => {
             }
 
 
-        //const hashedPassword = await hashPassword(password);
+        const hashedPassword = await hashPassword(password);
         const otp = Math.floor(100000 + Math.random() * 900000).toString();
 
         const newUser = new User({
@@ -29,7 +29,7 @@ exports.userSignup = async (req, res) => {
             neighborhood,
             isNewsletterSubscribed,
             otp,
-            password //: hashedPassword
+            password: hashedPassword
         });
 
         // Send OTP and verification link to user's email
@@ -138,8 +138,7 @@ exports.forgotPassword = async (req, res) => {
 
         // Send OTP to user's email
         const passwordResetLink = `https://fixitbackend-7zrf.onrender.com/api/v1/user/resetpassword?email=${existingUser.email}`;
-        
-        // await sendEmail(existingUser.email, "Password Reset OTP", `Your OTP is ${otp}`);
+        await sendPasswordResetOTP(existingUser.email, passwordResetLink, otp);
 
         return res.status(200).json({message: "OTP sent to your email",
                 redirectLink: `https://fixitbackend-7zrf.onrender.com/api/v1/user/resetpassword?email=${existingUser.email}`,
