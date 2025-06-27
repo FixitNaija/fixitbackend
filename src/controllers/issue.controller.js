@@ -3,6 +3,8 @@ const Issue = require('../models/issue.model');
 const User = require('../models/user.model');
 const cloudinary = require('../utils/cloudinary');
 const path = require('path');
+const genID = require('../utils/nanoid'); 
+const { sendNewIssueNotification } = require('../services/email/emailsender');
 
 exports.createIssue = async (req, res) => {
     const { title, description, category, state, location } = req.body;
@@ -31,7 +33,10 @@ exports.createIssue = async (req, res) => {
             }
         }
 
+        const issueID = genID(); 
+
         const newIssue = new Issue({
+            issueID : issueID,
             title,
             description,
             category,
@@ -48,7 +53,10 @@ exports.createIssue = async (req, res) => {
         }
 
         if(newIssue.images.length === 0) {
-            return res.status(400).json({ message: "Please upload at least one image" });
+            return res.status(403).json({ message: "Please upload at least one image" });
+        }
+        if(newIssue.images.length > 4) {
+            return res.status(403).json({ message: "You can only upload a maximum of 4 images" });
         }
 
         await newIssue.save();
@@ -56,18 +64,21 @@ exports.createIssue = async (req, res) => {
         // Update the user's myIssues tab
         await User.findByIdAndUpdate(user._id, { $push: { myIssues: newIssue._id } });
 
+        // Send email notification to the user
+        await sendNewIssueNotification(user.firstName, user.email, newIssue);
+
         res.status(201).json({ message: "Report created successfully", data: newIssue });
     } catch (error) {
-        console.error(error);
+        console.log(error);
         res.status(500).json({ message: "Server Error" });
     }
 }; 
 
 exports.getSingleIssue = async (req, res) => {
-    const id = req.query.id;
+    const {issueID} = req.params;
     try {
-        const issue = await Issue.findById(id)
-            .populate('comments', 'author content upvotes createdAt')
+        const issue = await Issue.findOne({issueID})
+            .populate('comments', 'author content upvotes createdAt') 
 
         if (!issue) {
             return res.status(404).json({ message: "Issue not found" });
@@ -75,7 +86,7 @@ exports.getSingleIssue = async (req, res) => {
 
         res.status(200).json({ message: "Issue retrieved successfully", data: issue });
     } catch (error) {
-        console.error(error);
+        console.log(error);
         res.status(500).json({ message: "Server Error" });
     }
 };
@@ -88,10 +99,10 @@ exports.myIssues = async (req, res) => {
                                   .sort({ reportdate: -1 });
         res.status(200).json({ message: "Issues retrieved successfully", data: issues });
     } catch (error) {
-        console.error(error);
+        console.log(error);
         res.status(500).json({ message: "Server Error" });
     }
-};
+}; 
 
 
 exports.getAllIssues = async (req, res) => {
@@ -103,16 +114,17 @@ exports.getAllIssues = async (req, res) => {
 
         res.status(200).json({ message: "All issues retrieved successfully", data: issues });
     } catch (error) {
-        console.error(error);
+        console.log(error);
         res.status(500).json({ message: "Server Error" });
     }
 };
 
 exports.upvoteIssue = async (req, res) => {
-    const {issueID, userID}  = req.query;
+    const {issueID} = req.params;
+    const {userID}  = req.query;
 
     try {
-        const validIssue = await Issue.findById(issueID);
+        const validIssue = await Issue.find({issueID});
         if (!validIssue) {
             return res.status(404).json({ message: "Issue not found" });
         }
@@ -124,7 +136,7 @@ exports.upvoteIssue = async (req, res) => {
             // If no upvote document exists for this issue, create a new one
             upvote = new Upvote({ issue: issueID, whoUpvoted: [userID] });
             await upvote.save();
-            await Issue.findByIdAndUpdate(issueID, { $push: { upvotes: upvote._id } });
+            await Issue.findByIdAndUpdate(issue._id, { $push: { upvotes: upvote._id } });
             return res.status(200).json({ message: 'Upvoted successfully' });
         }
 
@@ -135,13 +147,15 @@ exports.upvoteIssue = async (req, res) => {
 
         // Add user to whoUpvoted and save
         upvote.whoUpvoted.push(userID);
-        await upvote.save();
+        await upvote.save(); 
 
         res.status(200).json({ message: 'Upvoted successfully' });
     } catch (error) {
         res.status(500).json({ message: 'Server error' });
     }
 };
+
+
 
 
 

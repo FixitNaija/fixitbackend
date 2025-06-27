@@ -6,10 +6,15 @@ const adminSchema = new mongoose.Schema({
     email: { type: String, required: true, unique: true },
     password: { type: String },
     status: { type: String, enum: ['active', 'pending', 'deactivated'], default: 'pending' },
-    inviteToken: { type: String, unique: true },
+    inviteToken: { type: String},
     inviteExpires: { type: Date },
-    role: { type: String, enum: ['admin', 'superadmin'], default: 'admin' }
-});
+    role: { type: String, enum: ['admin', 'superadmin'], default: 'admin' },
+    lastLogin: { type: Date, default: Date.now }
+},
+
+{timestamps: true}
+
+);
 
 const Admin = mongoose.model('Admin', adminSchema);
 

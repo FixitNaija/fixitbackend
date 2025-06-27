@@ -3,7 +3,7 @@ const router = express.Router();
 const commentController = require('../controllers/comment.controller');
 
 // Create a comment on an issue
-router.post('/:issueId', commentController.createComment);
+router.post('/:issueID', commentController.createComment);
 
 // Get/Update/Delete specific comment by ID
 router.post('/:id', commentController.updateComment); 
@@ -17,6 +17,6 @@ router.post('/:id/upvote', commentController.upvoteComment);
 router.post('/:id/unupvote', commentController.removeUpvote);
 
 // Get all comments for a specific issue
-router.get('/issue/:issueId', commentController.getCommentsForIssue);
+router.get('/issue/:issueID', commentController.getCommentsForIssue);
 
 module.exports = router;

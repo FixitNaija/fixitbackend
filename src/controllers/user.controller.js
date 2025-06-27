@@ -1,6 +1,7 @@
 const User = require('../models/user.model');
 const jwt = require('jsonwebtoken');
 const { hashPassword, comparePassword } = require('../utils/hashing');
+const { sendSignupOTP, sendPasswordResetOTP } = require('../services/email/emailsender');
 
 
 exports.userSignup = async (req, res) => {
@@ -19,9 +20,8 @@ exports.userSignup = async (req, res) => {
         const hashedPassword = await hashPassword(password);
         const otp = Math.floor(100000 + Math.random() * 900000).toString();
 
-        const newUser = new User({ 
-            firstName, 
-            lastName,
+        const newUser = new User({
+            phone, 
             email,
             phone,
             state,
@@ -32,52 +32,53 @@ exports.userSignup = async (req, res) => {
             password: hashedPassword
         });
 
-        // Send OTP to user's email
-        // await sendEmail(newUser.email, "OTP Verification", `Your OTP is ${otp}`);
+        // Send OTP and verification link to user's email
+        const verificationLink = `https://fixitbackend-7zrf.onrender.com/api/v1/user/verify?email=${newUser.email}`;
+        await sendSignupOTP(newUser.email, otp, verificationLink); 
 
         await newUser.save();
-        return res
-        .status(201)
-        .json({message: "Account created successfully, Check your email for OTP verification", 
-            data: firstName, email})
+        return res.status(201)
+        .json({message: "Account created successfully, Check your email for OTP and verify your account", 
+             data: firstName, email,
+             redirectLink: `https://fixitbackend-7zrf.onrender.com/api/v1/user/verify?email=${newUser.email}`}); 
     }catch(error){
         console.log(error)
         res.status(500).json({message: "Server Error"})
     }
 }; 
 
-// exports.verifyUser = async (req, res) => {
-//     const {email} = req.query; 
-//     const {otp} = req.body;
-//     try{
-//         if(!email){
-//             return res.status(400).json({message: "Click the verification link sent to your email"})
-//         }
+exports.verifyUser = async (req, res) => {
+    const {email} = req.query;  
+    const {otp} = req.body;
+    try{
+        if(!email){
+            return res.status(400).json({message: "Check your email for verification link"})
+        }
 
-//         if(!otp){
-//             return res.status(400).json({message: "Input your OTP"})
-//         }
+        if(!otp){
+            return res.status(400).json({message: "Check your email for OTP and Input your OTP"})
+        }
 
-//         const existingUser = await User.findOne({email})
+        const existingUser = await User.findOne({email})
 
-//         if(!existingUser){
-//             return res.status(403).json({message: "User not found"})
-//         }
+        if(!existingUser){
+            return res.status(403).json({message: "User not found"})
+        }
 
-//         if(existingUser.otp !== otp){
-//             return res.status(403).json({message: "Invalid OTP"})
-//         }
+        if(existingUser.otp !== otp){
+            return res.status(403).json({message: "Invalid OTP"})
+        }
 
-//         existingUser.isVerified = true;
-//         existingUser.otp = null; // Clear OTP after verification
-//         await existingUser.save();
+        existingUser.isVerified = true;
+        existingUser.otp = null; // Clear OTP after verification
+        await existingUser.save();
 
-//         return res.status(200).json({message: "Email verified successfully"})
-//     }catch(error){
-//         console.log(error)
-//         res.status(500).json({message: "Server Error"})
-//     }
-// };
+        return res.status(200).json({message: "Email verified successfully"})
+    }catch(error){
+        console.log(error)
+        res.status(500).json({message: "Server Error"})
+    }
+};
 
 
 exports.userLogin = async (req, res) => {
@@ -89,7 +90,6 @@ exports.userLogin = async (req, res) => {
     }
 
     const existingUser = await User.findOne({ email });
-
 
     if (!existingUser) {
       return res.status(403).json({ message: "Please Create an Account" });
@@ -105,29 +105,16 @@ exports.userLogin = async (req, res) => {
       return res.status(403).json({ message: "Account not Verified, Check email for OTP" });
     }
 
-    //  Generate JWT
-    const token = jwt.sign(
-      { 
-        user: {
-          _id: existingUser._id,
-          email: existingUser.email
-        }
-      },
-      process.env.JWT_SECRET,
-      { expiresIn: process.env.JWT_EXPIRES_IN || '7d' }
-    );
+    const token = jwt.sign({name: existingUser.firstName, email: existingUser.email},
+                  process.env.JWT_SECRET, { expiresIn: process.env.JWT_EXPIRATION_USER });
 
-    //  Send token and user details
-    res.status(200).json({
-      message: "Logged in Successfully",
-      token: `Bearer ${token}`,
-      user: {
-        _id: existingUser._id
-      }
+    res.status(200).json({message: "Logged in Successfully",
+       token: token,
+       user: {name: existingUser.firstName, email: existingUser.email}
     });
     
   } catch (error) {
-    console.error(error);
+    console.log(error);
     res.status(500).json({ message: "Server Error" });
   }
 };
@@ -150,10 +137,12 @@ exports.forgotPassword = async (req, res) => {
         await existingUser.save();
 
         // Send OTP to user's email
-        // await sendEmail(existingUser.email, "Password Reset OTP", `Your OTP is ${otp}`);
+        const passwordResetLink = `https://fixitbackend-7zrf.onrender.com/api/v1/user/resetpassword?email=${existingUser.email}`;
+        await sendPasswordResetOTP(existingUser.email, passwordResetLink, otp);
 
         return res.status(200).json({message: "OTP sent to your email",
-                data: `https://fixitbackend-7zrf.onrender.com/api/v1/user/resetpassword?email=${existingUser.email}`})
+                redirectLink: `https://fixitbackend-7zrf.onrender.com/api/v1/user/resetpassword?email=${existingUser.email}`,
+                otp: otp });
     }catch(error){
         console.log(error)
         res.status(500).json({message: "Server Error"})
@@ -185,28 +174,7 @@ exports.resetPassword = async (req, res) => {
         res.status(500).json({message: "Server Error"})
     }
 
-}; 
-
-exports.testid = async (req, res) => {
-    const id = req.query.id;
-    try{
-        if(!id){
-            return res.status(400).json({message: "No ID"})
-        }
-
-        const existingUser = await User.findById(id);
-        if(!existingUser){
-            return res.status(403).json({message: "User not found"})
-        }
-
-        return res.status(200).json({message: "User found", data: existingUser.firstName, email: existingUser.email})
-
-    }catch(error){
-        console.log(error)
-        res.status(500).json({message: "Server Error"})
-    }
 };
-
 
 exports.getProfile = async (req, res) => {
   try {
@@ -227,4 +195,6 @@ exports.getProfile = async (req, res) => {
     res.status(500).json({ message: 'Server Error' });
   }
 };
+
+
 
