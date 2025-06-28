@@ -15,6 +15,7 @@ module.exports = (req, res, next) => {
     // Attach the decoded payload to req.user (adjust as needed for your payload structure)
     req.user = decoded.user || decoded;
     next();
+    
   } catch (err) {
     console.error('Authentication error:', err);
     res.status(401).json({ message: 'Token is not valid' });

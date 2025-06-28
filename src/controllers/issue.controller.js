@@ -47,6 +47,7 @@ exports.createIssue = async (req, res) => {
             reportedByName: user.firstName,
         });
 
+
         // If user reports anonymously, do not attach user to the issue. Show 'Anonymous'
         if (newIssue.isAnonymous === true) {
             newIssue.reportedByName = 'Anonymous';
