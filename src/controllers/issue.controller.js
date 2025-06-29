@@ -5,16 +5,26 @@ const cloudinary = require('../utils/cloudinary');
 const path = require('path');
 const genID = require('../utils/nanoid'); 
 const { sendNewIssueNotification } = require('../services/email/emailsender');
+const { issueCreateSchema } = require('../validations/validate');
 
 exports.createIssue = async (req, res) => {
     const { title, description, category, state, location } = req.body;
     const email = req.user.email; 
     const images = req.files;
 
+   
+
     try {
         if (!title || !description || !category || !state || !location) {
             return res.status(400).json({ message: "Please fill in all fields" });
         }
+
+        
+         // Validate user input
+        const { error } = issueCreateSchema.validate(req.body);
+            if (error) {
+            return res.status(400).json({ message: error.details[0].message });
+            }
 
         // Find the user and attach the issue to the reporting user
         const user = await User.findOne({ email });
@@ -136,7 +146,7 @@ exports.upvoteIssue = async (req, res) => {
             // If no upvote document exists for this issue, create a new one
             upvote = new Upvote({ issue: issueID, whoUpvoted: [userID] });
             await upvote.save();
-            await Issue.findByIdAndUpdate(issue._id, { $push: { upvotes: upvote._id } });
+            await Issue.findByIdAndUpdate(validIssue._id, { $push: { upvotes: upvote._id } });
             return res.status(200).json({ message: 'Upvoted successfully' });
         }
 

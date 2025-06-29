@@ -5,6 +5,7 @@ const { sendIssueStatusChangeNotification } = require('../../services/email/emai
 const { hashPassword, comparePassword } = require('../../utils/hashing');
 const jwt = require('jsonwebtoken');
 const mongoose = require('mongoose');
+const { adminSignupSchema } = require('../../validations/validate'); 
 
 
 
@@ -87,8 +88,13 @@ exports.adminSignup = async (req, res) => {
             });
         }
 
-        
-        const hashedPassword = await hashPassword(password); 
+        // Validate admin signup input
+        const { error } = adminSignupSchema.validate(req.body);
+        if (error) {
+            return res.status(400).json({ message: error.details[0].message });
+        }
+
+        const hashedPassword = await hashPassword(password);
         invitedAdmin.password = hashedPassword;
         invitedAdmin.status = 'active';
         invitedAdmin.inviteToken = undefined;
