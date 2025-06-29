@@ -32,11 +32,12 @@ exports.userSignup = async (req, res) => {
             password: hashedPassword
         });
 
+        await newUser.save(); 
+
         // Send OTP and verification link to user's email
         const verificationLink = `https://fixitbackend-7zrf.onrender.com/api/v1/user/verify?email=${newUser.email}`;
         await sendSignupOTP(newUser.email, otp, verificationLink); 
 
-        await newUser.save();
         return res.status(201)
         .json({message: "Account created successfully, Check your email for OTP and verify your account", 
              data: firstName, email,
