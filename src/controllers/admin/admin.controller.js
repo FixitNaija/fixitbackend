@@ -162,7 +162,7 @@ exports.adminDashboard = async (req, res) => {
 };
 
 exports.adminChangeStatus = async (req, res) => {
-    const { issueID } = req.query;
+    const { issueID } = req.params;
     const { status } = req.body; 
     try {
         const issue = await Issue.findOne({ issueID });

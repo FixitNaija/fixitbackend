@@ -8,7 +8,7 @@ const issueSchema = new mongoose.Schema({
                 required: true },  
     location: {type: String, required: true},
     images: {type: String, required: true},
-    status: {type: String, enum: ['Reported', 'Acknowledged','In Progress', 'Resolved'], default: 'Open'},
+    status: {type: String, enum: ['Reported', 'Acknowledged','Work In Progress', 'Resolved'], default: 'Open'},
     reportDate: {type: Date, default: Date.now},
     reportedBy: [{type: mongoose.Schema.Types.ObjectId, ref: 'User'}],
     comments: [{type: mongoose.Schema.Types.ObjectId, ref: 'Comment'}],
