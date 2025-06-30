@@ -4,6 +4,7 @@ const Issue = require('../models/issue.model');
 const jwt = require('jsonwebtoken');
 const { hashPassword, comparePassword } = require('../utils/hashing');
 const { sendSignupOTP, sendPasswordResetOTP } = require('../services/email/emailsender');
+const { userSignupSchema, userLoginSchema, passwordResetSchema } = require('../validations/validate');
 
 
 exports.userSignup = async (req, res) => {
@@ -11,6 +12,12 @@ exports.userSignup = async (req, res) => {
     try{
         if(!firstName || !lastName || !email ||!password){
             return res.status(400).json({message: "Input your Signup Credentials"})
+        }
+
+        // Validate user input
+        const { error } = userSignupSchema.validate(req.body);
+        if (error) {
+            return res.status(400).json({ message: error.details[0].message });
         }
 
         const existingUser = await User.findOne({email})
@@ -34,11 +41,12 @@ exports.userSignup = async (req, res) => {
             password: hashedPassword
         });
 
+        await newUser.save(); 
+
         // Send OTP and verification link to user's email
         const verificationLink = `https://fixitbackend-7zrf.onrender.com/api/v1/user/verify?email=${newUser.email}`;
         await sendSignupOTP(newUser.email, otp, verificationLink); 
 
-        await newUser.save();
         return res.status(201)
         .json({message: "Account created successfully, Check your email for OTP and verify your account", 
              data: firstName, email,
@@ -61,6 +69,7 @@ exports.verifyUser = async (req, res) => {
             return res.status(400).json({message: "Check your email for OTP and Input your OTP"})
         }
 
+        
         const existingUser = await User.findOne({email})
 
         if(!existingUser){
@@ -89,6 +98,13 @@ exports.userLogin = async (req, res) => {
   try {
     if (!email || !password) {
       return res.status(400).json({ message: "Input your Login Credentials" });
+    }
+
+    // Validate user input
+    const { error } = userLoginSchema.validate(req.body);
+
+    if (error) {
+        return res.status(400).json({ message: error.details[0].message });
     }
 
     const existingUser = await User.findOne({ email });
@@ -166,6 +182,13 @@ exports.resetPassword = async (req, res) => {
     try{
         if(!otp || !newPassword){
             return res.status(400).json({message: "Input your OTP and New Password"})
+        }
+
+        // Validate password reset input
+        const { error } = passwordResetSchema.validate(req.body);
+
+        if (error) {
+            return res.status(400).json({ message: error.details[0].message });
         }
 
         const verifyUser = await User.findOne({email})

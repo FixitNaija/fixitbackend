@@ -33,10 +33,10 @@ app.use(session({
 app.use(passport.initialize())
 app.use(passport.session())
 
-app.use('/googleauth', googleAuthRouter);
+app.use('/auth', googleAuthRouter);
 app.use('/api/v1/user', userRouter);
 app.use('/api/v1/issue', issueRouter);
-app.use('/api/v1/comments', commentRouter);
+app.use('/api/v1/issue/:issueID/comments', commentRouter);
 app.use('/api/v1/admin', adminRouter);
 
 app.listen(PORT, () => {

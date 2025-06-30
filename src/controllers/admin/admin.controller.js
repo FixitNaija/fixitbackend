@@ -1,8 +1,11 @@
 const Admin = require('../../models/admin/admin.model');
 const Issue = require('../../models/issue.model'); 
+const User = require('../../models/user.model');
+const { sendIssueStatusChangeNotification } = require('../../services/email/emailsender');
 const { hashPassword, comparePassword } = require('../../utils/hashing');
 const jwt = require('jsonwebtoken');
 const mongoose = require('mongoose');
+const { adminSignupSchema } = require('../../validations/validate'); 
 
 
 
@@ -33,10 +36,8 @@ exports.inviteAdmin = async (req, res) => {
             return res.status(403).json({ message: 'Admin with this email already exists' }); 
     }
 
-        // Create signup token to encrypt email and firstName 
-        const signupToken = jwt.sign({ email, firstName }, process.env.JWT_SECRET,{ expiresIn: '1hr' }); 
-    
-        //generate signuplink 
+        
+        const signupToken = jwt.sign({ email, firstName }, process.env.JWT_SECRET,{ expiresIn: '1hr' });  
         const signupLink = `https://fixitbackend-7zrf.onrender.com/api/v1/admin/signup/${signupToken}`;
 
     
@@ -50,7 +51,6 @@ exports.inviteAdmin = async (req, res) => {
         
         await invitedAdmin.save();
 
-        // Send response with signup link
         return res.status(200).json({ message: 'Invite link generated successfully', signupLink, expiresIn: '1 hour' }); 
 
     } catch (error) {
@@ -67,12 +67,15 @@ exports.adminSignup = async (req, res) => {
         if (!token) {
             return res.status(401).json({ message: 'Unauthorized' });
         }
+        if (!password || password.length < 8) {
+            return res.status(400).json({ message: 'Password must be at least 8 characters long' });
+        }
 
         //const adminInfo = token.split(' ')[1];
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
         const { email } = decoded;
 
-        // Find invited admin
+        
         const invitedAdmin = await Admin.findOne({ 
             email,
             status: 'pending',
@@ -85,8 +88,13 @@ exports.adminSignup = async (req, res) => {
             });
         }
 
-        // Hash password and update admin
-        const hashedPassword = await hashPassword(password); 
+        // Validate admin signup input
+        const { error } = adminSignupSchema.validate(req.body);
+        if (error) {
+            return res.status(400).json({ message: error.details[0].message });
+        }
+
+        const hashedPassword = await hashPassword(password);
         invitedAdmin.password = hashedPassword;
         invitedAdmin.status = 'active';
         invitedAdmin.inviteToken = undefined;
@@ -104,16 +112,6 @@ exports.adminSignup = async (req, res) => {
 
     } catch (error) {
         console.log(error);
-        return res.status(500).json({ message: 'Server Error' });
-    }
-};
-
-exports.adminDashboard = async (req, res) => {
-    try {
-        const issues = await Issue.find().populate('reportedBy', 'firstName lastName'); 
-        return res.status(200).json({ message: 'Issues retrieved successfully', data: issues });
-    } catch (error) {
-        console.log('Error retrieving issues:', error);
         return res.status(500).json({ message: 'Server Error' });
     }
 };
@@ -153,11 +151,21 @@ exports.adminLogin = async (req, res) => {
     }
 };
 
-exports.adminChangeStatus = async (req, res) => {
-    const id = req.query.id;
-    const status = req.body; 
+exports.adminDashboard = async (req, res) => {
     try {
-        const issue = await Issue.findById(id)
+        const issues = await Issue.find().populate('reportedBy', 'firstName lastName'); 
+        return res.status(200).json({ message: 'Issues retrieved successfully', data: issues });
+    } catch (error) {
+        console.log('Error retrieving issues:', error);
+        return res.status(500).json({ message: 'Server Error' });
+    }
+};
+
+exports.adminChangeStatus = async (req, res) => {
+    const { issueID } = req.params;
+    const { status } = req.body; 
+    try {
+        const issue = await Issue.findOne({ issueID });
         if (!issue) {
             return res.status(404).json({ message: "Issue not found" });
         }
@@ -169,9 +177,16 @@ exports.adminChangeStatus = async (req, res) => {
         issue.status = status;
         await issue.save();
 
+        //send email to notify user of issue change
+        const user = await User.findById(issue.reportedBy);
+        if (user) {
+            await sendIssueStatusChangeNotification(user.firstName, user.email, issue.issueID, status, issue.title);
+        }
+
         res.status(200).json({ message: "Issue retrieved successfully", data: issue });
     } catch (error) {
         console.error(error);
         res.status(500).json({ message: "Server Error" });
     }
 };
+

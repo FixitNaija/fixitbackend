@@ -2,47 +2,50 @@ const Comment = require('../models/comment.model');
 const Issue = require('../models/issue.model');
 const User = require('../models/user.model');
 
-// Create a new comment on an issue
+
 exports.createComment = async (req, res) => {
-  const { content, authorId, isAnonymous } = req.body;
+  const { author } = req.user.email
+  const { content, isAnonymous } = req.body;
   const { issueID } = req.params;
 
   try {
-    const user = await User.findById(authorId);
-    const issue = await Issue.findOne({issueID});
+    const user = await User.findOne({ email: author });
+    const issue = await Issue.findOne({ issueID }); 
 
-    if (!user || !issue) {
-      return res.status(404).json({ message: 'User or issue not found' });
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    if (!issue) {
+      return res.status(404).json({ message: 'Issue not found' });
     }
 
     const comment = new Comment({
       content,
-      author: authorId,
-      issue: issueId,
+      author,
+      issue: issueID,
       isAnonymous,
-      displayName: isAnonymous ? 'Anonymous' : user.firstName
+      displayName: isAnonymous ? 'Anonymous' : user.firstName // Use the user's first name if not anonymous
     });
 
     await comment.save();
-
     issue.comments.push(comment._id);
+
     await issue.save();
-
-    await User.findByIdAndUpdate(authorId, {
-  $push: { comments: comment._id }
-});
-
-
+    await User.findByIdAndUpdate(author, { $push: { comments: comment._id } });
     res.status(201).json({ message: 'Comment added successfully', comment });
-  } catch (err) {
-    res.status(500).json({ error: err.message });
+
+  } catch (error) {
+    console.log('Error creating comment:', error);
+    res.status(500).json({ message: 'Server error while creating comment' });
   }
 };
 
 
 // Upvote a comment
 exports.upvoteComment = async (req, res) => {
-  const userId = req.body.userId;
+  const { user } = req.body.email;
+  const { issueID } = req.params;
 
   try {
     const comment = await Comment.findById(req.params.id);
@@ -64,9 +67,11 @@ exports.upvoteComment = async (req, res) => {
   }
 };
 
+
 // Remove an upvote
 exports.removeUpvote = async (req, res) => {
-  const userId = req.body.userId;
+  const { user } = req.body.email;
+  const { issueID } = req.params;
 
   try {
     const comment = await Comment.findById(req.params.id);
@@ -81,17 +86,19 @@ exports.removeUpvote = async (req, res) => {
 
 // Get all comments for an issue
 exports.getCommentsForIssue = async (req, res) => {
+  const { issueID } = req.params;
   try {
-    const comments = await Comment.find({ issue: req.params.issueId })
+    const comments = await Comment.find({ issue: issueID })
       .populate('author', 'firstName')
       .sort({ createdAt: -1 });
 
     const formatted = comments.map(comment => ({
       _id: comment._id,
       content: comment.content,
-      displayName: comment.isAnonymous ? 'Anonymous' : comment.author.firstName,
+      displayName: comment.isAnonymous 
+        ? 'Anonymous' 
+        : (comment.author?.firstName || 'Unknown'),
       createdAt: comment.createdAt,
-      upvotes: comment.upvotes.length,
       isAnonymous: comment.isAnonymous
     }));
 
