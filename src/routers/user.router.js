@@ -14,6 +14,7 @@ router.post('/forgotpassword', forgotPassword);
 router.post('/resetpassword', resetPassword);
 router.get('/profile', isAuthenticated, getProfile);
 router.get('/myissues', isAuthenticated, myIssues);
+router.get('/dashboard-metrics', isAuthenticated, getDashboardMetrics);
 
 
 module.exports = router;

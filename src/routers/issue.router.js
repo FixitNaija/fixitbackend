@@ -6,7 +6,7 @@ const isAuthenticated = require('../middleware/isAuthenticated');
 
 
 
-router.post ('/reportissue', upload.array('images', 4), createIssue);
+router.post('/reportissue', isAuthenticated, upload.array('images', 4), createIssue);
 router.get('/:issueID', getSingleIssue);
 router.get('/allissues', getAllIssues);
 router.post('/upvote', upvoteIssue);

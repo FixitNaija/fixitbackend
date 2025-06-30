@@ -1,3 +1,4 @@
+const mongoose = require('mongoose');
 const User = require('../models/user.model');
 const Issue = require('../models/issue.model');
 const jwt = require('jsonwebtoken');
@@ -122,8 +123,17 @@ exports.userLogin = async (req, res) => {
       return res.status(403).json({ message: "Account not Verified, Check email for OTP" });
     }
 
-    const token = jwt.sign({name: existingUser.firstName, email: existingUser.email},
-                  process.env.JWT_SECRET, { expiresIn: process.env.JWT_EXPIRATION_USER });
+    const token = jwt.sign(
+  {
+    user: {
+      _id: existingUser._id,
+      name: existingUser.firstName,
+      email: existingUser.email
+    }
+  },
+  process.env.JWT_SECRET,
+  { expiresIn: process.env.JWT_EXPIRATION_USER }
+);
 
     res.status(200).json({message: "Logged in Successfully",
        token: token,
@@ -132,7 +142,7 @@ exports.userLogin = async (req, res) => {
     
   } catch (error) {
     console.log(error);
-    res.status(500).json({ message: "Server Error" });
+    res.status(500).json({ message: "Server Error" }); 
   }
 };
 
@@ -233,5 +243,71 @@ exports.myIssues = async (req, res) => { //now routed in the user router
         res.status(500).json({ message: "Server Error" });
     }
 }; 
+
+exports.getDashboardMetrics = async (req, res) => {
+  try {
+    const userId = req.user._id;
+
+    // 1. Active issues (not resolved)
+    const activeIssues = await Issue.countDocuments({
+      reportedBy: userId,
+      status: { $ne: 'Resolved' }
+    });
+
+    // 2. Resolved this week
+    const oneWeekAgo = new Date();
+    oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
+
+    const resolvedThisWeek = await Issue.countDocuments({
+      reportedBy: userId,
+      status: 'Resolved',
+      updatedAt: { $gte: oneWeekAgo }
+    });
+
+    // 3. Average response time (in days)
+    const resolvedIssues = await Issue.find({
+      reportedBy: userId,
+      status: 'Resolved'
+    });
+
+    let totalDays = 0;
+    resolvedIssues.forEach(issue => {
+      const created = issue.createdAt;
+      const resolved = issue.updatedAt;
+      const days = (resolved - created) / (1000 * 60 * 60 * 24);
+      totalDays += days;
+    });
+
+    const avgResponseTime = resolvedIssues.length > 0
+      ? Math.round(totalDays / resolvedIssues.length)
+      : 0;
+
+    // 4. Community engagement = total upvotes + total comments
+    const userIssues = await Issue.find({ reportedBy: userId });
+
+    let totalUpvotes = 0;
+    let totalComments = 0;
+
+    userIssues.forEach(issue => {
+      totalUpvotes += issue.upvotes.length;
+      totalComments += issue.comments.length;
+    });
+
+    const communityEngagement = totalUpvotes + totalComments;
+
+    return res.status(200).json({
+      message: 'Dashboard metrics fetched successfully',
+      data: {
+        activeIssues,
+        resolvedThisWeek,
+        avgResponseTime,
+        communityEngagement
+      }
+    });
+  } catch (err) {
+    console.error('Dashboard Error:', err);
+    res.status(500).json({ message: 'Server Error' });
+  }
+};
 
 
