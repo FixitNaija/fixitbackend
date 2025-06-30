@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const { createIssue, myIssues, getSingleIssue, getAllIssues, upvoteIssue } = require('../controllers/issue.controller');
 const upload = require('../utils/multer'); 
+const isAuthenticated = require('../middleware/isAuthenticated');
 
 
 

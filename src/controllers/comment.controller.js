@@ -45,6 +45,7 @@ exports.createComment = async (req, res) => {
 // Upvote a comment
 exports.upvoteComment = async (req, res) => {
   const { user } = req.body.email;
+  const { issueID } = req.params;
 
   try {
     const comment = await Comment.findById(req.params.id);
@@ -70,6 +71,7 @@ exports.upvoteComment = async (req, res) => {
 // Remove an upvote
 exports.removeUpvote = async (req, res) => {
   const { user } = req.body.email;
+  const { issueID } = req.params;
 
   try {
     const comment = await Comment.findById(req.params.id);
@@ -84,17 +86,19 @@ exports.removeUpvote = async (req, res) => {
 
 // Get all comments for an issue
 exports.getCommentsForIssue = async (req, res) => {
+  const { issueID } = req.params;
   try {
-    const comments = await Comment.find({ issue: req.params.issueId })
+    const comments = await Comment.find({ issue: issueID })
       .populate('author', 'firstName')
       .sort({ createdAt: -1 });
 
     const formatted = comments.map(comment => ({
       _id: comment._id,
       content: comment.content,
-      displayName: comment.isAnonymous ? 'Anonymous' : comment.author.firstName,
+      displayName: comment.isAnonymous 
+        ? 'Anonymous' 
+        : (comment.author?.firstName || 'Unknown'),
       createdAt: comment.createdAt,
-      //upvotes: comment.upvotes.length,
       isAnonymous: comment.isAnonymous
     }));
 
