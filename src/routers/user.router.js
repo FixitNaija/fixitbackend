@@ -1,7 +1,7 @@
 const express = require('express');
-const { userSignup, userLogin, verifyUser, forgotPassword, resetPassword, getProfile } = require('../controllers/user.controller');
 const { myIssues } = require('../controllers/user.controller');
 const isAuthenticated = require('../middleware/isAuthenticated'); 
+const { userSignup, userLogin, verifyUser, forgotPassword, resetPassword, getProfile, getDashboardMetrics } = require('../controllers/user.controller');
 const router = express.Router();
 
 
