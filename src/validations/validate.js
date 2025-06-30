@@ -39,8 +39,7 @@ const adminSignupSchema = Joi.object({
 module.exports = {
   userSignupSchema,
   userLoginSchema,
-  issueCreateSchema,
-  otpSchema,
+  createIssueSchema,
   passwordResetSchema,
   adminSignupSchema
 };

@@ -1,4 +1,5 @@
 const User = require('../models/user.model');
+const Issue = require('../models/issue.model');
 const jwt = require('jsonwebtoken');
 const { hashPassword, comparePassword } = require('../utils/hashing');
 const { sendSignupOTP, sendPasswordResetOTP } = require('../services/email/emailsender');
@@ -154,7 +155,7 @@ exports.forgotPassword = async (req, res) => {
 
         // Send OTP to user's email
         const passwordResetLink = `https://fixitbackend-7zrf.onrender.com/api/v1/user/resetpassword?email=${existingUser.email}`;
-        await sendPasswordResetOTP(existingUser.email, passwordResetLink, otp);
+        await sendPasswordResetOTP(existingUser.email, otp, passwordResetLink);
 
         return res.status(200).json({message: "OTP sent to your email",
                 redirectLink: `https://fixitbackend-7zrf.onrender.com/api/v1/user/resetpassword?email=${existingUser.email}`,
@@ -219,5 +220,18 @@ exports.getProfile = async (req, res) => {
   }
 };
 
+
+exports.myIssues = async (req, res) => { //now routed in the user router
+    const { userID } = req.user.email;
+    console.log(userID); 
+    try {
+        const issues = await Issue.find({ reportedBy: userID })
+                                  .sort({ reportdate: -1 });
+        res.status(200).json({ message: "Issues retrieved successfully", data: issues });
+    } catch (error) {
+        console.log(error); 
+        res.status(500).json({ message: "Server Error" });
+    }
+}; 
 
 
