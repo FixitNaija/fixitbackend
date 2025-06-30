@@ -103,19 +103,6 @@ exports.getSingleIssue = async (req, res) => {
 };
 
 
-exports.myIssues = async (req, res) => {
-    const id = req.query.id; 
-    try {
-        const issues = await Issue.find({ reportedBy: id })
-                                  .sort({ reportdate: -1 });
-        res.status(200).json({ message: "Issues retrieved successfully", data: issues });
-    } catch (error) {
-        console.log(error);
-        res.status(500).json({ message: "Server Error" });
-    }
-}; 
-
-
 exports.getAllIssues = async (req, res) => {
     try {
         const issues = await Issue.find()
@@ -130,9 +117,10 @@ exports.getAllIssues = async (req, res) => {
     }
 };
 
+
 exports.upvoteIssue = async (req, res) => {
     const {issueID} = req.params;
-    const {userID}  = req.query;
+    const { userID }  = req.user.email; 
 
     try {
         const validIssue = await Issue.find({issueID});
