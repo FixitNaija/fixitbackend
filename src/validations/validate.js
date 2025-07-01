@@ -6,6 +6,7 @@ const userSignupSchema = Joi.object({
   lastName: Joi.string().min(2).max(30).required(),
   email: Joi.string().email().required(),
   password: Joi.string().min(8).required(),
+  confirmPassword: Joi.string().valid(Joi.ref('password')).required(),
 });
 
 // User Login Validation
