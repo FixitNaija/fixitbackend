@@ -123,15 +123,9 @@ exports.userLogin = async (req, res) => {
       return res.status(403).json({ message: "Account not Verified, Check email for OTP" });
     }
 
-    const token = jwt.sign(
-  {
-    user: {
-      _id: existingUser._id,
-      name: existingUser.firstName,
-      email: existingUser.email
-    }
-  },
-  process.env.JWT_SECRET,
+    const token = jwt.sign({
+      user: {id: existingUser._id, name: existingUser.firstName, email: existingUser.email}
+  }, process.env.JWT_SECRET,
   { expiresIn: process.env.JWT_EXPIRATION_USER }
 );
 
@@ -232,25 +226,25 @@ exports.getProfile = async (req, res) => {
 
 
 exports.myIssues = async (req, res) => { //now routed in the user router
-    const { userID } = req.user.email;
-    console.log(userID); 
+    const userID = req.user.id;
     try {
         const issues = await Issue.find({ reportedBy: userID })
-                                  .sort({ reportdate: -1 });
+                                  .sort({ reportDate: -1 });
+        console.log({reportedBy: userID});
         res.status(200).json({ message: "Issues retrieved successfully", data: issues });
     } catch (error) {
         console.log(error); 
-        res.status(500).json({ message: "Server Error" });
+        res.status(500).json({ message: "Server Error" }); 
     }
 }; 
 
 exports.getDashboardMetrics = async (req, res) => {
   try {
-    const userId = req.user._id;
+    const userID = req.user.id;
 
     // 1. Active issues (not resolved)
     const activeIssues = await Issue.countDocuments({
-      reportedBy: userId,
+      reportedBy: userID,
       status: { $ne: 'Resolved' }
     });
 
@@ -259,14 +253,14 @@ exports.getDashboardMetrics = async (req, res) => {
     oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
 
     const resolvedThisWeek = await Issue.countDocuments({
-      reportedBy: userId,
+      reportedBy: userID,
       status: 'Resolved',
       updatedAt: { $gte: oneWeekAgo }
     });
 
     // 3. Average response time (in days)
     const resolvedIssues = await Issue.find({
-      reportedBy: userId,
+      reportedBy: userID,
       status: 'Resolved'
     });
 

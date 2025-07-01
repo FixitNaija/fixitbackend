@@ -9,7 +9,7 @@ const { issueCreateSchema } = require('../validations/validate');
 
 exports.createIssue = async (req, res) => {
     const { title, description, category, state, location } = req.body;
-    const email = req.user.email; 
+    const userID = req.user.id; 
     const images = req.files;
 
    
@@ -27,7 +27,7 @@ exports.createIssue = async (req, res) => {
             }
 
         // Find the user and attach the issue to the reporting user
-        const user = await User.findOne({ email });
+        const user = await User.findById(userID);
         if (!user) {
             return res.status(404).json({ message: "User not found" });
         }
@@ -120,7 +120,7 @@ exports.getAllIssues = async (req, res) => {
 
 exports.upvoteIssue = async (req, res) => {
     const {issueID} = req.params;
-    const { userID }  = req.user.email; 
+    const userID  = req.user.id; 
 
     try {
         const validIssue = await Issue.find({issueID});
