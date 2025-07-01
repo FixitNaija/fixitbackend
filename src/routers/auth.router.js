@@ -7,8 +7,8 @@ router.get('/google', passport.authenticate('google', { scope: ['profile', 'emai
 
 // Google OAuth callback
 router.get('/google/callback', passport.authenticate('google', {
-  failureRedirect: '/login',
-  successRedirect: '/profile' 
+  failureRedirect: 'https://fix-it-naija.onrender.com/Signup',
+  successRedirect: 'https://fix-it-naija.onrender.com/UserPage'
 }));
 
 // Logout
