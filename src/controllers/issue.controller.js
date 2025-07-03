@@ -5,7 +5,7 @@ const cloudinary = require('../utils/cloudinary');
 const path = require('path');
 const genID = require('../utils/nanoid'); 
 const { sendNewIssueNotification } = require('../services/email/emailsender');
-const { issueCreateSchema } = require('../validations/validate');
+const { createIssueSchema } = require('../validations/validate');
 
 exports.createIssue = async (req, res) => {
     const { title, description, category, state, location } = req.body;
@@ -19,9 +19,9 @@ exports.createIssue = async (req, res) => {
             return res.status(400).json({ message: "Please fill in all fields" });
         }
 
-        
-         // Validate user input
-        const { error } = issueCreateSchema.validate(req.body);
+
+        //Validate user input
+        const { error } = createIssueSchema.validate(req.body);
             if (error) {
             return res.status(400).json({ message: error.details[0].message });
             }
@@ -76,7 +76,7 @@ exports.createIssue = async (req, res) => {
         await User.findByIdAndUpdate(user._id, { $push: { myIssues: newIssue._id } });
 
         // Send email notification to the user
-        await sendNewIssueNotification(user.firstName, user.email, newIssue);
+        await sendNewIssueNotification(user.email, user.firstName, newIssue);
 
         res.status(201).json({ message: "Report created successfully", data: newIssue });
     } catch (error) {

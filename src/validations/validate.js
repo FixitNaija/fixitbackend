@@ -1,4 +1,5 @@
 const Joi = require('joi');
+const { image } = require('../utils/cloudinary');
 
 // User Signup Validation
 const userSignupSchema = Joi.object({
@@ -22,7 +23,7 @@ const createIssueSchema = Joi.object({
   category: Joi.string().required(),
   state: Joi.string().required(),
   location: Joi.string().required(),
-  images: Joi.array().items(Joi.string().uri()).required(),
+  //images: Joi.array().items(Joi.string().uri()).max(4).optional(), // Optional, max 4 images
 });
 
 // Password Reset Validation
