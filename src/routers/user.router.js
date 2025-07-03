@@ -1,5 +1,4 @@
 const express = require('express');
-const { myIssues } = require('../controllers/user.controller');
 const isAuthenticated = require('../middleware/isAuthenticated'); 
 const { userSignup, userLogin, verifyUser, forgotPassword, resetPassword, resendOTP, getProfile, myIssues, getDashboardMetrics } = require('../controllers/user.controller');
 const router = express.Router();
