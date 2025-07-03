@@ -124,10 +124,12 @@ exports.userLogin = async (req, res) => {
     }
 
     const token = jwt.sign({
-      user: {id: existingUser._id, name: existingUser.firstName, email: existingUser.email}
-  }, process.env.JWT_SECRET,
-  { expiresIn: process.env.JWT_EXPIRATION_USER }
-);
+  user: { id: existingUser._id, name: existingUser.firstName, email: existingUser.email }
+}, process.env.JWT_SECRET, {
+  expiresIn: process.env.JWT_EXPIRATION_USER
+});
+
+console.log('Token created with expiration:', process.env.JWT_EXPIRATION_USER);
 
     res.status(200).json({message: "Logged in Successfully",
        token: token,
@@ -277,7 +279,7 @@ exports.getDashboardMetrics = async (req, res) => {
       : 0;
 
     // 4. Community engagement = total upvotes + total comments
-    const userIssues = await Issue.find({ reportedBy: userId });
+     const userIssues = await Issue.find({ reportedBy: userID });
 
     let totalUpvotes = 0;
     let totalComments = 0;
