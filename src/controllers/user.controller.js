@@ -129,8 +129,6 @@ exports.userLogin = async (req, res) => {
   expiresIn: process.env.JWT_EXPIRATION_USER
 });
 
-console.log('Token created with expiration:', process.env.JWT_EXPIRATION_USER);
-
     res.status(200).json({message: "Logged in Successfully",
        token: token,
        user: {name: existingUser.firstName, email: existingUser.email}
@@ -227,7 +225,7 @@ exports.getProfile = async (req, res) => {
 };
 
 
-exports.myIssues = async (req, res) => { //now routed in the user router
+exports.myIssues = async (req, res) => { 
     const userID = req.user.id;
     try {
         const issues = await Issue.find({ reportedBy: userID })
