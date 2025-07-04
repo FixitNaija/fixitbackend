@@ -2,11 +2,7 @@ const multer = require('multer');
 const path = require('path');
 
 
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, 'uploads/');
-  }
-});
+const storage = multer.memoryStorage();
 
 const fileFilter = (req, file, cb) => {
   const allowedExtensions = ['.jpg', '.jpeg', '.png'];
@@ -18,7 +14,6 @@ const fileFilter = (req, file, cb) => {
     cb(new Error('File type is not supported'), false);
   }
 };
-
 
 const fields = { images: { maxCount: 4 } };
 
