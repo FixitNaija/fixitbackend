@@ -1,4 +1,4 @@
-const NewIssueNotification = (NewIssue) => {
+const NewIssueNotification = (firstName, NewIssue) => {
   const { title, description, category, state, location, status, images = [] } = NewIssue;
   const currentYear = new Date().getFullYear();
 

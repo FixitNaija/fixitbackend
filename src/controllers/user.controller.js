@@ -91,6 +91,38 @@ exports.verifyUser = async (req, res) => {
     }
 };
 
+exports.resendOTP = async (req, res) => {
+  const { email } = req.query;
+
+  try {
+    if (!email) {
+      return res.status(400).json({ message: "Input your Email" });
+    }
+
+    const existingUser = await User.findOne({ email });
+    if (!existingUser) {
+      return res.status(403).json({ message: "Input a valid Email" });
+    }
+
+    // Generate new OTP
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    existingUser.otp = otp;
+    await existingUser.save();
+
+    // Send new OTP to user's email
+    const verificationLink = `https://fixitbackend-7zrf.onrender.com/api/v1/user/verify?email=${existingUser.email}`;
+    await sendSignupOTP(existingUser.email, otp, verificationLink);
+
+    return res.status(200).json({
+      message: "New OTP sent to your email",
+      redirectLink: `https://fixitbackend-7zrf.onrender.com/api/v1/user/verify?email=${existingUser.email}`,
+      otp: otp
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ message: "Server Error" });
+  }
+};
 
 exports.userLogin = async (req, res) => {
   const { email, password } = req.body;

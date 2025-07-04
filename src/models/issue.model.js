@@ -6,7 +6,7 @@ const issueSchema = new mongoose.Schema({
     description: {type: String, required: true}, 
     category: { type: String, enum: ['Road Damage', 'Clogged Drainage', 'Streetlight Issue'], 
                 required: true },  
-    location: {type: String, required: true},
+    localGovernment: {type: String, required: true},
     images: [{ type: String, required: true }],
     status: {type: String, enum: ['Reported', 'Acknowledged','In Progress', 'Resolved'], default: 'Reported'},
     reportDate: {type: Date, default: Date.now},

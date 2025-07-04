@@ -37,7 +37,7 @@ const sendPasswordResetOTP = async (email, otp, passwordResetLink) => {
 };
 
 
-const sendNewIssueNotification = async (firstName, email, NewIssue) => {
+const sendNewIssueNotification = async (email, firstName, NewIssue) => {
   try {
     const mailOptions = {
       from: "fixitteam300@gmail.com",
