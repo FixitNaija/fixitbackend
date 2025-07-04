@@ -8,23 +8,16 @@ const { sendNewIssueNotification } = require('../services/email/emailsender');
 const { createIssueSchema } = require('../validations/validate');
 
 exports.createIssue = async (req, res) => {
-    const { title, description, category, state, location } = req.body;
+    const { title, description, category, state, localGovernment } = req.body;
     const userID = req.user.id; 
     const images = req.files;
 
    
 
     try {
-        if (!title || !description || !category || !state || !location) {
+        if (!title || !description || !category || !state || !localGovernment) {
             return res.status(400).json({ message: "Please fill in all fields" });
         }
-
-
-        //Validate user input
-        const { error } = createIssueSchema.validate(req.body);
-            if (error) {
-            return res.status(400).json({ message: error.details[0].message });
-            }
 
         // Find the user and attach the issue to the reporting user
         const user = await User.findById(userID);
@@ -43,6 +36,13 @@ exports.createIssue = async (req, res) => {
             }
         }
 
+         //Validate user input
+        // const { error } = createIssueSchema.validate(req.body);
+        //     if (error) {
+        //         console.log(error);
+        //     return res.status(400).json({ message: error.details[0].message });
+        //     }
+
         const issueID = genID(); 
 
         const newIssue = new Issue({
@@ -51,7 +51,7 @@ exports.createIssue = async (req, res) => {
             description,
             category,
             state,
-            location,
+            localGovernment,
             images: imageUrls,
             reportedBy: user._id,
             reportedByName: user.firstName,
