@@ -123,20 +123,20 @@ exports.upvoteIssue = async (req, res) => {
     const userID  = req.user.id; 
 
     try {
-        const validIssue = await Issue.find({issueID});
+        const validIssue = await Issue.findOne({issueID});
         if (!validIssue) {
             return res.status(404).json({ message: "Issue not found" });
         }
              if (!userID) {
             return res.status(400).json({ message: "Login to upvote this issue" });
               }
-        let upvote = await Upvote.findOne({ issue: issueID });
+        let upvote = await Upvote.findOne({ issue: validIssue._id });
         if (!upvote) {
             // If no upvote document exists for this issue, create a new one
-            upvote = new Upvote({ issue: issueID, whoUpvoted: [userID] });
+            upvote = new Upvote({ issue: validIssue._id, whoUpvoted: [userID] });
             await upvote.save();
             await Issue.findByIdAndUpdate(validIssue._id, { $push: { upvotes: upvote._id } });
-            return res.status(200).json({ message: 'Upvoted successfully' });
+            return res.status(200).json({ message: 'Upvoted successfully', issueID: validIssue.issueID });
         }
 
         // Check if user already upvoted
