@@ -1,6 +1,6 @@
 const Admin = require('../../models/admin/admin.model');
-const Issue = require('../../models/issue.model'); 
-const User = require('../../models/user.model');
+const Issue = require('../../models/user/issue.model'); 
+const User = require('../../models/user/user.model');
 const { sendIssueStatusChangeNotification } = require('../../services/email/emailsender');
 const { hashPassword, comparePassword } = require('../../utils/hashing');
 const jwt = require('jsonwebtoken');

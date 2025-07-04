@@ -1,10 +1,10 @@
 const mongoose = require('mongoose');
-const User = require('../models/user.model');
-const Issue = require('../models/issue.model');
+const User = require('../../models/user/user.model');
+const Issue = require('../../models/user/issue.model');
 const jwt = require('jsonwebtoken');
-const { hashPassword, comparePassword } = require('../utils/hashing');
-const { sendSignupOTP, sendPasswordResetOTP } = require('../services/email/emailsender');
-const { userSignupSchema, userLoginSchema, passwordResetSchema } = require('../validations/validate');
+const { hashPassword, comparePassword } = require('../../utils/hashing');
+const { sendSignupOTP, sendPasswordResetOTP } = require('../../services/email/emailsender');
+const { userSignupSchema, userLoginSchema, passwordResetSchema } = require('../../validations/validate');
 
 
 exports.userSignup = async (req, res) => {

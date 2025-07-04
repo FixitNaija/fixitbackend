@@ -1,8 +1,8 @@
 const express = require('express');
 const router = express.Router();
-const { createIssue, getSingleIssue, getAllIssues, upvoteIssue } = require('../controllers/issue.controller');
-const upload = require('../utils/multer'); 
-const isAuthenticated = require('../middleware/isAuthenticated');
+const { createIssue, getSingleIssue, getAllIssues, upvoteIssue } = require('../../controllers/user/issue.controller');
+const upload = require('../../utils/multer'); 
+const isAuthenticated = require('../../middleware/isAuthenticated');
 
 
 

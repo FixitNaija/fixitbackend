@@ -7,11 +7,11 @@ require('./src/middleware/googleauth');
 const cors = require('cors');
 
 
-const userRouter = require('./src/routers/user.router');
-const issueRouter = require('./src/routers/issue.router');
-const commentRouter = require('./src/routers/comment.router');
+const userRouter = require('./src/routers/user/user.router');
+const issueRouter = require('./src/routers/user/issue.router');
+const commentRouter = require('./src/routers/user/comment.router');
 const isAuthenticated = require('./src/middleware/isAuthenticated');
-const googleAuthRouter = require('./src/routers/auth.router');
+const googleAuthRouter = require('./src/routers/user/auth.router');
 const adminRouter = require('./src/routers/admin/admin.router');
 
 

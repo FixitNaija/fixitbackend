@@ -1,10 +1,10 @@
-const Upvote = require('../models/upvotes.model');
-const Issue = require('../models/issue.model');
-const User = require('../models/user.model');
-const cloudinary = require('../utils/cloudinary');
-const genID = require('../utils/nanoid'); 
-const { sendNewIssueNotification } = require('../services/email/emailsender');
-const { createIssueSchema } = require('../validations/validate');
+const Upvote = require('../../models/user/upvotes.model');
+const Issue = require('../../models/user/issue.model');
+const User = require('../../models/user/user.model');
+const cloudinary = require('../../utils/cloudinary');
+const genID = require('../../utils/nanoid'); 
+const { sendNewIssueNotification } = require('../../services/email/emailsender');
+const { createIssueSchema } = require('../../validations/validate');
 
 exports.createIssue = async (req, res) => {
     const { title, description, category, state, localGovernment } = req.body;
@@ -77,7 +77,7 @@ exports.createIssue = async (req, res) => {
         // Update the user's myIssues tab
         await User.findByIdAndUpdate(user._id, { $push: { myIssues: newIssue._id } });
 
-        // Send email notification to the user
+        
         await sendNewIssueNotification(user.email, user.firstName, newIssue);
 
         res.status(201).json({ message: "Report created successfully", data: newIssue });
@@ -130,8 +130,8 @@ exports.upvoteIssue = async (req, res) => {
             return res.status(400).json({ message: "Login to upvote this issue" });
               }
         let upvote = await Upvote.findOne({ issue: validIssue._id });
+        // If no upvote document exists for this issue, create a new one
         if (!upvote) {
-            // If no upvote document exists for this issue, create a new one
             upvote = new Upvote({ issue: validIssue._id, whoUpvoted: [userID] });
             await upvote.save();
             await Issue.findByIdAndUpdate(validIssue._id, { $push: { upvotes: upvote._id } });
