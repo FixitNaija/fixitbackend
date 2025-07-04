@@ -7,8 +7,8 @@ const isAuthenticated = require('../middleware/isAuthenticated');
 
 
 router.post('/reportissue', isAuthenticated, upload.array('images', 4), createIssue);
-router.get('/:issueID', getSingleIssue);
 router.get('/allissues', getAllIssues);
+router.get('/:issueID', getSingleIssue);
 router.post('/upvote', isAuthenticated, upvoteIssue);
 
 module.exports = router;
