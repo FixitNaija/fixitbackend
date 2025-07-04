@@ -22,7 +22,7 @@ const createIssueSchema = Joi.object({
   description: Joi.string().min(20).required(),
   category: Joi.string().required(),
   state: Joi.string().required(),
-  location: Joi.string().required(),
+  localGovernment: Joi.string().required(),
   //images: Joi.array().items(Joi.string().uri()).max(4).optional(), // Optional, max 4 images
 });
 
