@@ -107,10 +107,7 @@ exports.getSingleIssue = async (req, res) => {
 
 exports.getAllIssues = async (req, res) => {
     try {
-        const issues = await Issue.find()
-                                  .sort({ reportdate: -1 })
-                                  .populate('reportedBy', 'firstName')
-                                  .populate('comments', 'author content upvotes createdAt');
+        const issues = await Issue.find().sort({ createdAt: -1 })
 
         res.status(200).json({ message: "All issues retrieved successfully", data: issues });
     } catch (error) {
