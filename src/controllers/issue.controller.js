@@ -17,6 +17,7 @@ exports.createIssue = async (req, res) => {
             return res.status(400).json({ message: "Please fill in all fields" });
         }
 
+ 
         // Find the user and attach the issue to the reporting user
         const user = await User.findById(userID);
         if (!user) {

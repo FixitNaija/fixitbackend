@@ -1,9 +1,12 @@
 const express = require('express');
 const router = express.Router();
 const commentController = require('../controllers/comment.controller');
+const authenticate = require('../middleware/isAuthenticated');
+
+router.use(authenticate);
 
 
-router.post('/', commentController.createComment); // Create a comment on an issue
+router.post('/:issueID/comments', commentController.createComment); // Create a comment on an issue
 router.get('/', commentController.getCommentsForIssue); // Get all comments for a specific issue
 
 // Get/Update/Delete specific comment by ID
