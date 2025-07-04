@@ -2,152 +2,215 @@ const Comment = require('../models/comment.model');
 const Issue = require('../models/issue.model');
 const User = require('../models/user.model');
 
-
+// Create a comment
 exports.createComment = async (req, res) => {
-  const { author } = req.user.email
-  const { content, isAnonymous } = req.body;
-  const { issueID } = req.params;
-
   try {
-    const user = await User.findOne({ email: author });
-    const issue = await Issue.findOne({ issueID }); 
+    const userEmail = req.user.email;
+    const { content, isAnonymous } = req.body;
+    const { issueID } = req.params;
 
-    if (!user) {
-      return res.status(404).json({ message: 'User not found' });
+    if (!issueID) {
+      return res.status(400).json({ message: "Issue ID parameter is missing from the URL." });
     }
 
+    const issue = await Issue.findOne({ issueID });
+    console.log("ISSUE FOUND:", issue);
+
     if (!issue) {
-      return res.status(404).json({ message: 'Issue not found' });
+      return res.status(404).json({ message: `No issue found with issueID: ${issueID}` });
+    }
+
+    const user = await User.findOne({ email: userEmail });
+    if (!user) {
+      return res.status(404).json({ message: "User not found." });
     }
 
     const comment = new Comment({
       content,
-      author,
-      issue: issueID,
+      author: user._id,
+      issue: issue._id,
       isAnonymous,
-      displayName: isAnonymous ? 'Anonymous' : user.firstName // Use the user's first name if not anonymous
+      displayName: isAnonymous ? "Anonymous" : user.firstName
     });
 
     await comment.save();
-    issue.comments.push(comment._id);
 
+    issue.comments.push(comment._id);
     await issue.save();
-    await User.findByIdAndUpdate(author, { $push: { comments: comment._id } });
-    res.status(201).json({ message: 'Comment added successfully', comment });
+
+    await User.findByIdAndUpdate(
+      user._id,
+      { $push: { comments: comment._id } }
+    );
+
+    const populatedComment = await Comment.findById(comment._id).populate({
+      path: 'issue',
+      select: 'issueID title'
+    });
+
+    return res.status(201).json({
+      message: "Comment created successfully.",
+      comment: populatedComment
+    });
 
   } catch (error) {
-    console.log('Error creating comment:', error);
-    res.status(500).json({ message: 'Server error while creating comment' });
+    console.error("Error creating comment:", error);
+    return res.status(500).json({
+      message: "Server error while creating comment.",
+      error: error.message
+    });
   }
 };
 
 
-// Upvote a comment
+//  Upvote a comment
 exports.upvoteComment = async (req, res) => {
-  const { user } = req.body.email;
-  const { issueID } = req.params;
-
   try {
-    const comment = await Comment.findById(req.params.id);
-
-    if (!comment.upvotes.includes(userId)) {
-      comment.upvotes.push(userId);
-      await comment.save();
-      return res.json({ success: true, upvotes: comment.upvotes.length });
+    const user = await User.findOne({ email: req.user.email });
+    if (!user) {
+      return res.status(404).json({ message: "User not found." });
     }
 
-    await User.findByIdAndUpdate(userId, {
-  $addToSet: { votes: comment._id }
-});
+    const comment = await Comment.findById(req.params.commentId);
+    if (!comment) {
+      return res.status(404).json({ message: "Comment not found." });
+    }
 
+    if (!comment.upvotes.includes(user._id)) {
+      comment.upvotes.push(user._id);
+      await comment.save();
 
-    res.status(400).json({ message: 'Already upvoted' });
+      await User.findByIdAndUpdate(user._id, {
+        $addToSet: { votes: comment._id }
+      });
+
+      return res.json({
+        success: true,
+        upvotes: comment.upvotes.length
+      });
+    }
+
+    return res.status(400).json({ message: 'Already upvoted' });
+
   } catch (err) {
+    console.error(err);
     res.status(500).json({ error: err.message });
   }
 };
 
-
-// Remove an upvote
+//  Remove an upvote
 exports.removeUpvote = async (req, res) => {
-  const { user } = req.body.email;
-  const { issueID } = req.params;
-
   try {
-    const comment = await Comment.findById(req.params.id);
-    comment.upvotes = comment.upvotes.filter(uid => uid.toString() !== userId);
+    const user = await User.findOne({ email: req.user.email });
+    if (!user) {
+      return res.status(404).json({ message: "User not found." });
+    }
+
+    const comment = await Comment.findById(req.params.commentId);
+    if (!comment) {
+      return res.status(404).json({ message: "Comment not found." });
+    }
+
+    comment.upvotes = comment.upvotes.filter(
+      uid => uid.toString() !== user._id.toString()
+    );
     await comment.save();
 
-    res.json({ success: true, upvotes: comment.upvotes.length });
+    res.json({
+      success: true,
+      upvotes: comment.upvotes.length
+    });
+
   } catch (err) {
+    console.error(err);
     res.status(500).json({ error: err.message });
   }
 };
 
-// Get all comments for an issue
+//  Get all comments for an issue
 exports.getCommentsForIssue = async (req, res) => {
-  const { issueID } = req.params;
   try {
-    const comments = await Comment.find({ issue: issueID })
+    const { issueID } = req.params;
+
+    const issue = await Issue.findOne({ issueID });
+    if (!issue) {
+      return res.status(404).json({ message: `No issue found with issueID: ${issueID}` });
+    }
+
+    const comments = await Comment.find({ issue: issue._id })
       .populate('author', 'firstName')
       .sort({ createdAt: -1 });
 
     const formatted = comments.map(comment => ({
       _id: comment._id,
       content: comment.content,
-      displayName: comment.isAnonymous 
-        ? 'Anonymous' 
+      displayName: comment.isAnonymous
+        ? 'Anonymous'
         : (comment.author?.firstName || 'Unknown'),
       createdAt: comment.createdAt,
-      isAnonymous: comment.isAnonymous
+      isAnonymous: comment.isAnonymous,
+      upvotes: comment.upvotes.length
     }));
 
     res.json(formatted);
+
   } catch (err) {
+    console.error(err);
     res.status(500).json({ error: err.message });
   }
 };
 
-// Update a comment
+//  Update a comment
 exports.updateComment = async (req, res) => {
-    try {
-        const comment = await Comment.findByIdAndUpdate(
-            req.params.id,
-            req.body,
-            { new: true }
-        );
-        if (!comment) {
-            return res.status(404).json({ message: 'Comment not found' });
-        }
-        res.json(comment);
-    } catch (error) {
-        res.status(500).json({ message: error.message });
+  try {
+    const comment = await Comment.findByIdAndUpdate(
+      req.params.commentId,
+      req.body,
+      { new: true }
+    );
+
+    if (!comment) {
+      return res.status(404).json({ message: 'Comment not found.' });
     }
+
+    res.json(comment);
+
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: error.message });
+  }
 };
 
-// Get a single comment
+//  Get a single comment
 exports.getComment = async (req, res) => {
-    try {
-        const comment = await Comment.findById(req.params.id);
-        if (!comment) {
-            return res.status(404).json({ message: 'Comment not found' });
-        }
-        res.json(comment);
-    } catch (error) {
-        res.status(500).json({ message: error.message });
+  try {
+    const comment = await Comment.findById(req.params.commentId);
+
+    if (!comment) {
+      return res.status(404).json({ message: 'Comment not found.' });
     }
+
+    res.json(comment);
+
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: error.message });
+  }
 };
 
-// Delete a comment
+//  Delete a comment
 exports.deleteComment = async (req, res) => {
-    try {
-        const comment = await Comment.findByIdAndDelete(req.params.id);
-        if (!comment) {
-            return res.status(404).json({ message: 'Comment not found' });
-        }
-        res.json({ message: 'Comment deleted successfully' });
-    } catch (error) {
-        res.status(500).json({ message: error.message });
-    }
-};
+  try {
+    const comment = await Comment.findByIdAndDelete(req.params.commentId);
 
+    if (!comment) {
+      return res.status(404).json({ message: 'Comment not found.' });
+    }
+
+    res.json({ message: 'Comment deleted successfully.' });
+
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: error.message });
+  }
+};

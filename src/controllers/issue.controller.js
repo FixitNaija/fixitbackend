@@ -5,7 +5,7 @@ const cloudinary = require('../utils/cloudinary');
 const path = require('path');
 const genID = require('../utils/nanoid'); 
 const { sendNewIssueNotification } = require('../services/email/emailsender');
-const { issueCreateSchema } = require('../validations/validate');
+const { createIssueSchema } = require('../validations/validate');
 
 exports.createIssue = async (req, res) => {
     const { title, description, category, state, location } = req.body;
@@ -21,7 +21,7 @@ exports.createIssue = async (req, res) => {
 
         
          // Validate user input
-        const { error } = issueCreateSchema.validate(req.body);
+        const { error } = createIssueSchema.validate(req.body);
             if (error) {
             return res.status(400).json({ message: error.details[0].message });
             }

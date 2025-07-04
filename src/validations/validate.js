@@ -22,7 +22,7 @@ const createIssueSchema = Joi.object({
   category: Joi.string().required(),
   state: Joi.string().required(),
   location: Joi.string().required(),
-  images: Joi.array().items(Joi.string().uri()).required(),
+  images: Joi.any().optional(),
 });
 
 // Password Reset Validation
