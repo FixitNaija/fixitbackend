@@ -17,15 +17,6 @@ exports.inviteAdmin = async (req, res) => {
             return res.status(400).json({ message: 'FirstName and email are required' });
         }
 
-        //if (!id || !mongoose.Types.ObjectId.isValid(id)) {
-    //         return res.status(400).json({ message: 'Invalid or missing superadmin ID' });
-    //     }
-
-    //    const superadmin = await Admin.findById(id); 
-    //     if (!superadmin) {
-    //         return res.status(404).json({ message: 'Only superadmins can invite new admins' });
-    //     }
-
         //Superadmin ID in the env file
        // if (id !== process.env.SUPERADMIN_ID) {
         //   return res.status(403).json({ message: 'You are not authorized to invite admins' });
