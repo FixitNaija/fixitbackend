@@ -1,4 +1,3 @@
-const mongoose = require('mongoose');
 const User = require('../../models/user/user.model');
 const Issue = require('../../models/user/issue.model');
 const jwt = require('jsonwebtoken');
@@ -49,7 +48,7 @@ exports.userSignup = async (req, res) => {
 
         return res.status(201)
         .json({message: "Account created successfully, Check your email for OTP and verify your account", 
-             data: firstName, email,
+             data: firstName, email, otp,
              redirectLink: `https://fixitbackend-7zrf.onrender.com/api/v1/user/verify?email=${newUser.email}`}); 
     }catch(error){
         console.log(error)
