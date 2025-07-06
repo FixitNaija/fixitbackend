@@ -17,11 +17,6 @@ exports.inviteAdmin = async (req, res) => {
             return res.status(400).json({ message: 'FirstName and email are required' });
         }
 
-        //Superadmin ID in the env file
-       // if (id !== process.env.SUPERADMIN_ID) {
-        //   return res.status(403).json({ message: 'You are not authorized to invite admins' });
-        //}
-
         const existingAdmin = await Admin.findOne({ email });
         if (existingAdmin) {
             return res.status(403).json({ message: 'Admin with this email already exists' }); 
@@ -62,12 +57,10 @@ exports.adminSignup = async (req, res) => {
             return res.status(400).json({ message: 'Password must be at least 8 characters long' });
         }
 
-        //const adminInfo = token.split(' ')[1];
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
         const { email } = decoded;
 
-        
-        const invitedAdmin = await Admin.findOne({ 
+        const invitedAdmin = await Admin.findOne({
             email,
             status: 'pending',
             inviteExpires: { $gt: new Date() }
