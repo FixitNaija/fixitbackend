@@ -11,8 +11,13 @@ const { adminSignupSchema } = require('../../validations/validate');
 
 exports.inviteAdmin = async (req, res) => {
     const { firstName, email } = req.body;
-    //const id = req.query.id; 
+    const adminID = req.admin.id; 
     try {
+
+        const validAdmin = await Admin.findById(adminID);
+        if (!validAdmin || validAdmin.role !== 'superadmin') {
+            return res.status(403).json({ message: 'You are not authorized to invite admins' });
+        }
         if (!firstName || !email) {
             return res.status(400).json({ message: 'FirstName and email are required' });
         }
@@ -124,8 +129,8 @@ exports.adminLogin = async (req, res) => {
             return res.status(401).json({ message: 'Invalid credentials' });
         }
 
-        const token = jwt.sign({ email: admin.email, role: admin.role }, 
-                      process.env.JWT_SECRET, { expiresIn: process.env.JWT_EXPIRATION_ADMIN });
+        const token = jwt.sign({ user: { id: admin._id, email: admin.email, role: admin.role } }, process.env.JWT_SECRET,
+             { expiresIn: process.env.JWT_EXPIRATION_ADMIN });
 
         return res.status(200).json({ message: 'Login successful', token });
 
@@ -136,7 +141,13 @@ exports.adminLogin = async (req, res) => {
 };
 
 exports.adminDashboard = async (req, res) => {
+    const adminID = req.user.id;
     try {
+        const validAdmin = await Admin.findById(adminID);
+        if (!validAdmin) {
+            return res.status(403).json({ message: "You are not authorized to access this dashboard" });
+        }
+
         const issues = await Issue.find().populate('reportedBy', 'firstName lastName'); 
         return res.status(200).json({ message: 'Issues retrieved successfully', data: issues });
     } catch (error) {
@@ -148,13 +159,18 @@ exports.adminDashboard = async (req, res) => {
 exports.adminChangeStatus = async (req, res) => {
     const { issueID } = req.params;
     const { status } = req.body; 
+    const adminID = req.user.id;
     try {
+        const validAdmin = await Admin.findById(adminID);
+        if (!validAdmin) {
+            return res.status(403).json({ message: "You are not authorized to change issue status" });
+        }
         const issue = await Issue.findOne({ issueID });
         if (!issue) {
             return res.status(404).json({ message: "Issue not found" });
         }
 
-        if(status == ' '){
+        if(status == undefined || status == null || status == " "){
             return res.status(403).json({message: "Update status before you save"})
         }
 
@@ -167,7 +183,7 @@ exports.adminChangeStatus = async (req, res) => {
             await sendIssueStatusChangeNotification(user.firstName, user.email, issue.issueID, status, issue.title);
         }
 
-        res.status(200).json({ message: "Issue retrieved successfully", data: issue });
+        res.status(200).json({ message: "Issue Status Changed successfully", data: issue });
     } catch (error) {
         console.error(error);
         res.status(500).json({ message: "Server Error" });

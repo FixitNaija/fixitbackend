@@ -8,7 +8,7 @@ router.post('/inviteadmin', inviteAdmin);
 router.post('/signup/:token', adminSignup);
 router.post('/login', adminLogin);
 router.get('/dashboard', isAuthenticated, adminDashboard);
-router.patch('/:issueID/changestatus', adminChangeStatus);
+router.patch('/:issueID/changestatus', isAuthenticated, adminChangeStatus);
 
 module.exports = router; 
 
