@@ -51,4 +51,4 @@ app.use('/api/v1/admin', adminRouter);
 app.listen(PORT, () => {
     connectDb();
     console.log(`Server is running on port ${PORT}`);
-}); 
+});
