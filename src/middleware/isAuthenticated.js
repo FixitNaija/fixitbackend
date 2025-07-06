@@ -12,11 +12,11 @@ module.exports = (req, res, next) => {
 
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
-    // Attach the decoded payload to req.user (adjust as needed for your payload structure)
     req.user = decoded.user || decoded;
     next();
-  } catch (err) {
-    console.error('Authentication error:', err);
+  } catch (error) {
+    console.error('Authentication error:', error);
     res.status(401).json({ message: 'Token is not valid' });
   }
 };
+
