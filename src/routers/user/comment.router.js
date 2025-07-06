@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const commentController = require('../controllers/comment.controller');
+const commentController = require('../../controllers/user/comment.controller');
 
 
 router.post('/', commentController.createComment); // Create a comment on an issue

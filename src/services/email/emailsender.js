@@ -53,7 +53,7 @@ const sendNewIssueNotification = async (email, firstName, NewIssue) => {
   }
 };
 
-const sendIssueStatusChangeNotification = async (firstName, email, issueID, status) => {
+const sendIssueStatusChangeNotification = async (firstName, email, issueID, status, title) => {
   try {
     const mailOptions = {
       from: "fixitteam300@gmail.com",
@@ -76,3 +76,5 @@ module.exports = {
   sendNewIssueNotification,
   sendIssueStatusChangeNotification
 };
+
+
