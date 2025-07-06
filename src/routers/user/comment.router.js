@@ -1,21 +1,24 @@
 const express = require('express');
 const router = express.Router();
 const commentController = require('../../controllers/user/comment.controller');
+const authenticate = require('../middleware/isAuthenticated');
+
+router.use(authenticate);
 
 
-router.post('/', commentController.createComment); // Create a comment on an issue
-router.get('/', commentController.getCommentsForIssue); // Get all comments for a specific issue
+router.post('/:issueID/comments', commentController.createComment); // Create a comment on an issue
+router.get('/:issueID/comments', commentController.getCommentsForIssue); // Get all comments for a specific issue
 
 // Get/Update/Delete specific comment by ID
-router.post('/:id', commentController.updateComment);
-router.get('/:id', commentController.getComment);
-router.delete('/:id', commentController.deleteComment);
+router.put('/comments/:commentId', commentController.updateComment);
+router.get('/comments/:commentId', commentController.getComment);
+router.delete('/comments/:commentId', commentController.deleteComment);
 
 // Upvote a comment
-router.post('/:id/upvote', commentController.upvoteComment);
+router.post('/comments/:commentId/upvote', commentController.upvoteComment);
 
 // Remove upvote
-router.post('/:id/unupvote', commentController.removeUpvote);
+router.delete('/comments/:commentId/upvote', commentController.removeUpvote);
 
 
 

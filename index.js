@@ -3,6 +3,7 @@ const connectDb = require('./src/config/db');
 const dotenv = require('dotenv');
 const passport = require('passport');
 const session = require('express-session');
+const MongoStore = require('connect-mongo');
 require('./src/middleware/googleauth');
 const cors = require('cors');
 
@@ -25,10 +26,18 @@ app.use(express.urlencoded({ extended: true }));
 app.use(cors()); 
 
 app.use(session({
-    secret: process.env.SESSION_SECRET || 'your_session_secret',
-    resave: false,
-    saveUninitialized: false
-})); 
+  secret: process.env.SESSION_SECRET,
+  resave: false,
+  saveUninitialized: false,
+  store: MongoStore.create({
+    mongoUrl: process.env.MONGO_URL,
+    ttl: 14 * 24 * 60 * 60 // Session expiry: 14 days
+  }),
+  cookie: {
+    secure: process.env.NODE_ENV === 'production',
+    maxAge: 1000 * 60 * 60 * 24 // 1 day
+  }
+}));
 
 app.use(passport.initialize())
 app.use(passport.session())
@@ -36,7 +45,7 @@ app.use(passport.session())
 app.use('/auth', googleAuthRouter);
 app.use('/api/v1/user', userRouter);
 app.use('/api/v1/issue', issueRouter);
-app.use('/api/v1/issue/:issueID/comments', commentRouter);
+app.use('/api/v1/issue', commentRouter);
 app.use('/api/v1/admin', adminRouter);
 
 app.listen(PORT, () => {
