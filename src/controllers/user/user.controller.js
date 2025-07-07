@@ -95,18 +95,18 @@ exports.resendOTP = async (req, res) => {
 
   try {
     if (!email) {
-      return res.status(400).json({ message: "Input your Email" });
+      return res.status(400).json({ message: "Restart the signup process" });
     }
 
     const existingUser = await User.findOne({ email });
     if (!existingUser) {
-      return res.status(403).json({ message: "Input a valid Email" });
+      return res.status(403).json({ message: "Invalid Email" });
     }
 
     // Generate new OTP
     const otp = Math.floor(100000 + Math.random() * 900000).toString();
     existingUser.otp = otp;
-    await existingUser.save();
+    await existingUser.save(); 
 
     // Send new OTP to user's email
     const verificationLink = `https://fixitbackend-7zrf.onrender.com/api/v1/user/verify?email=${existingUser.email}`;
