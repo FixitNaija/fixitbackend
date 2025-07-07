@@ -1,6 +1,6 @@
-const Comment = require('../models/comment.model');
-const Issue = require('../models/issue.model');
-const User = require('../models/user.model');
+const Comment = require('../../models/user/comment.model');
+const Issue = require('../../models/user/issue.model');
+const User = require('../../models/user/user.model');
 
 // Create a comment
 exports.createComment = async (req, res) => {

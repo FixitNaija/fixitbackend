@@ -1,5 +1,4 @@
 const Joi = require('joi');
-const { image } = require('../utils/cloudinary');
 
 // User Signup Validation
 const userSignupSchema = Joi.object({

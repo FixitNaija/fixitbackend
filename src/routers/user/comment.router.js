@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
-const commentController = require('../controllers/comment.controller');
-const authenticate = require('../middleware/isAuthenticated');
+const commentController = require('../../controllers/user/comment.controller');
+const authenticate = require('../../middleware/isAuthenticated');
 
 router.use(authenticate);
 
