@@ -1,9 +1,10 @@
 const express = require('express');
 const passport = require('passport');
 const jwt = require('jsonwebtoken');
+const authenticate = require('../../middleware/isAuthenticated');
+
 const router = express.Router();
 
-// Start Google OAuth
 router.get(
   '/google',
   passport.authenticate('google', {
@@ -12,12 +13,11 @@ router.get(
   })
 );
 
-// Google OAuth callback
 router.get(
   '/google/callback',
   passport.authenticate('google', {
     failureRedirect: 'https://fix-it-naija.onrender.com/Signup',
-    session: false, 
+    session: false,
   }),
   (req, res) => {
     const user = req.user;
@@ -36,24 +36,31 @@ router.get(
       }
     );
 
-    // Build redirect URL with token and user info
-    const redirectUrl = `https://fix-it-naija.onrender.com/UserPage?token=${token}&name=${encodeURIComponent(
-      user.firstName
-    )}&email=${encodeURIComponent(user.email)}`;
+    res.cookie('jwt', token, {
+      httpOnly: true,
+      secure: true,
+      sameSite: 'None',
+      maxAge: 7 * 24 * 60 * 60 * 1000,
+    });
 
-    res.redirect(redirectUrl);
+    res.redirect('https://fix-it-naija.onrender.com/UserPage');
   }
 );
 
-// Logout (optional if using sessions)
 router.get('/logout', (req, res) => {
-  req.logout(function (err) {
-    if (err) {
-      return res.status(500).json({ message: 'Logout error' });
-    }
-    res.redirect('/');
+  res.clearCookie('jwt', {
+    secure: true,
+    sameSite: 'None',
+  });
+  res.redirect('https://fix-it-naija.onrender.com/');
+});
+
+//  profile route
+router.get('/profile', authenticate, (req, res) => {
+  res.json({
+    message: `Welcome back, ${req.user.name}`,
+    user: req.user,
   });
 });
 
 module.exports = router;
-
