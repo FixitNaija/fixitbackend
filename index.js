@@ -24,8 +24,10 @@ const PORT = process.env.PORT;
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cors({
-  origin: "*"
-})); 
+  origin: "*",
+  credentials: true, 
+  })
+); 
 
 app.use(session({
   secret: process.env.SESSION_SECRET,
@@ -53,4 +55,4 @@ app.use('/api/v1/admin', adminRouter);
 app.listen(PORT, () => {
     connectDb();
     console.log(`Server is running on port ${PORT}`);
-}); 
+});
