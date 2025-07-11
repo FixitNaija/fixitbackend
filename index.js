@@ -23,14 +23,11 @@ const PORT = process.env.PORT;
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-
-app.use(
-  cors({
-    origin: "https://fix-it-naija.onrender.com",
-    credentials: true,
+app.use(cors({
+  origin: "*",
+  credentials: true, 
   })
-);
-
+); 
 
 app.use(session({
   secret: process.env.SESSION_SECRET,
