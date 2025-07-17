@@ -48,7 +48,7 @@ exports.userSignup = async (req, res) => {
 
         return res.status(201)
         .json({message: "Account created successfully, Check your email for OTP and verify your account", 
-             data: firstName, email, otp,
+             data: firstName, email,
              redirectLink: `https://fixitbackend-7zrf.onrender.com/api/v1/user/verify?email=${newUser.email}`}); 
     }catch(error){
         console.log(error)
@@ -191,7 +191,7 @@ exports.forgotPassword = async (req, res) => {
 
         return res.status(200).json({message: "OTP sent to your email",
                 redirectLink: `https://fixitbackend-7zrf.onrender.com/api/v1/user/resetpassword?email=${existingUser.email}`,
-                otp: otp });
+   });
     }catch(error){
         console.log(error)
         res.status(500).json({message: "Server Error"})
