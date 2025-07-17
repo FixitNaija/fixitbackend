@@ -57,7 +57,7 @@ exports.userSignup = async (req, res) => {
 }; 
 
 exports.verifyUser = async (req, res) => {
-    const {email} = req.query;  
+    const {email} = req.body;  
     const {otp} = req.body;
     try{
         if(!email){
@@ -67,8 +67,6 @@ exports.verifyUser = async (req, res) => {
         if(!otp){
             return res.status(400).json({message: "Check your email for OTP and Input your OTP"})
         }
-
-        
         const existingUser = await User.findOne({email})
 
         if(!existingUser){
@@ -91,7 +89,7 @@ exports.verifyUser = async (req, res) => {
 };
 
 exports.resendOTP = async (req, res) => {
-  const { email } = req.query;
+  const { email } = req.body;
 
   try {
     if (!email) {
@@ -113,7 +111,8 @@ exports.resendOTP = async (req, res) => {
     await sendSignupOTP(existingUser.email, otp, verificationLink);
 
     return res.status(200).json({
-      message: "New OTP sent to your email"
+      message: "New OTP sent to your email",
+      redirectLink: `https://fixitbackend-7zrf.onrender.com/api/v1/user/verify?email=${existingUser.email}`,
     });
   } catch (error) {
     console.log(error);

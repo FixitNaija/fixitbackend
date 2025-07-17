@@ -28,6 +28,9 @@ app.use(cors({
   credentials: true, 
   })
 ); 
+  origin: "*",
+  credentials: true,
+})); 
 
 app.use(session({
   secret: process.env.SESSION_SECRET,
