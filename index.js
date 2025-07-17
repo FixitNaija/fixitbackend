@@ -25,6 +25,10 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cors({
   origin: "*",
+  credentials: true, 
+  })
+); 
+  origin: "*",
   credentials: true,
 })); 
 
@@ -54,4 +58,4 @@ app.use('/api/v1/admin', adminRouter);
 app.listen(PORT, () => {
     connectDb();
     console.log(`Server is running on port ${PORT}`);
-}); 
+});
