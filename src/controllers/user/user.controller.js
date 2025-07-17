@@ -114,8 +114,7 @@ exports.resendOTP = async (req, res) => {
 
     return res.status(200).json({
       message: "New OTP sent to your email",
-      redirectLink: `https://fixitbackend-7zrf.onrender.com/api/v1/user/verify?email=${existingUser.email}`,
-      otp: otp
+      redirectLink: `https://fixitbackend-7zrf.onrender.com/api/v1/user/verify?email=${existingUser.email}`
     });
   } catch (error) {
     console.log(error);
