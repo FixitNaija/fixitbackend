@@ -113,8 +113,7 @@ exports.resendOTP = async (req, res) => {
     await sendSignupOTP(existingUser.email, otp, verificationLink);
 
     return res.status(200).json({
-      message: "New OTP sent to your email",
-      redirectLink: `https://fixitbackend-7zrf.onrender.com/api/v1/user/verify?email=${existingUser.email}`
+      message: "New OTP sent to your email"
     });
   } catch (error) {
     console.log(error);
