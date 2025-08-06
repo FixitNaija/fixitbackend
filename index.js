@@ -18,8 +18,19 @@ const adminRouter = require('./src/routers/admin/admin.router');
 
 
 const app = express(); 
+app.get('/ping', (req, res) => {
+  console.log("📡 Ping route hit");
+  res.send("pong");
+});
+
 dotenv.config();
 const PORT = process.env.PORT;
+
+app.use((req, res, next) => {
+  console.log(`🔥 Incoming request: ${req.method} ${req.url}`);
+  next();
+});
+
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -27,7 +38,7 @@ app.use(cors({
   origin: "*",
   credentials: true, 
   })
-);
+); 
 
 app.use(session({
   secret: process.env.SESSION_SECRET,
@@ -52,7 +63,15 @@ app.use('/api/v1/issue', issueRouter);
 app.use('/api/v1/issue', commentRouter);
 app.use('/api/v1/admin', adminRouter);
 
+app.use((err, req, res, next) => {
+  console.error("💥 Unhandled Error:", err);
+  res.status(err.status || 500).json({ message: err.message || "Internal Server Error" });
+});
+
+
 app.listen(PORT, () => {
     connectDb();
     console.log(`Server is running on port ${PORT}`);
-});
+}); 
+
+ 

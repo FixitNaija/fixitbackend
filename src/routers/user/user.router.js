@@ -3,9 +3,6 @@ const isAuthenticated = require('../../middleware/isAuthenticated');
 const { userSignup, userLogin, verifyUser, forgotPassword, resetPassword, resendOTP, getProfile, myIssues, getDashboardMetrics } = require('../../controllers/user/user.controller');
 const router = express.Router();
 
-
-
-
 router.post('/signup', userSignup);
 router.post('/login', userLogin);
 router.post('/verify', verifyUser);

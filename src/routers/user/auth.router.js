@@ -2,12 +2,11 @@ const express = require('express');
 const passport = require('passport');
 const jwt = require('jsonwebtoken');
 const authenticate = require('../../middleware/isAuthenticated');
-
 const router = express.Router();
 
-router.get(
-  '/google',
-  passport.authenticate('google', {
+
+router.get('/google',
+passport.authenticate('google', {
     scope: ['profile', 'email'],
     prompt: 'select_account',
   })

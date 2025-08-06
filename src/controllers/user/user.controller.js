@@ -57,8 +57,7 @@ exports.userSignup = async (req, res) => {
 }; 
 
 exports.verifyUser = async (req, res) => {
-    const {email} = req.body;  
-    const {otp} = req.body;
+    const {email, otp} = req.body;  
     try{
         if(!email){
             return res.status(400).json({message: "Check your email for verification link"})
@@ -68,7 +67,7 @@ exports.verifyUser = async (req, res) => {
             return res.status(400).json({message: "Check your email for OTP and Input your OTP"})
         }
         const existingUser = await User.findOne({email})
-
+ 
         if(!existingUser){
             return res.status(403).json({message: "User not found"})
         }
@@ -76,6 +75,7 @@ exports.verifyUser = async (req, res) => {
         if(existingUser.otp !== otp){
             return res.status(403).json({message: "Invalid OTP"})
         }
+
 
         existingUser.isVerified = true;
         existingUser.otp = null; // Clear OTP after verification
