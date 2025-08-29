@@ -23,7 +23,14 @@ const PORT = process.env.PORT;
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-app.use(cors()); 
+
+app.use(
+  cors({
+    origin: "https://fix-it-naija.onrender.com",
+    credentials: true,
+  })
+);
+
 
 app.use(session({
   secret: process.env.SESSION_SECRET,
@@ -51,4 +58,4 @@ app.use('/api/v1/admin', adminRouter);
 app.listen(PORT, () => {
     connectDb();
     console.log(`Server is running on port ${PORT}`);
-}); 
+});
